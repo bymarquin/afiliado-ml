@@ -22,8 +22,8 @@
 
 | Nome         | Variável               | HEX       | Uso                            |
 | ------------ | ---------------------- | --------- | ------------------------------ |
-| Primary      | `--color-primary`      | `#F9D52C` | CTAs, badges, links destacados |
-| Primary Dark | `--color-primary-dark` | `#E6C324` | Hover do primary               |
+| Primary      | `--color-primary`      | `#2563EB` | CTAs, badges, links destacados |
+| Primary Dark | `--color-primary-dark` | `#1D4ED8` | Hover do primary               |
 | Hero BG      | `--color-hero-bg`      | `#545547` | Background do hero banner      |
 
 ### Escala de Cinzas
@@ -40,7 +40,7 @@
 ### Semântica de Cores
 
 ```
-Ação Principal      → primary (#F9D52C)
+Ação Principal      → primary (#2563EB)
 Ação Secundária     → gray-950 (#0F1113)
 Ação Outline        → transparent + border-gray-200
 Background Página   → white (#FFFFFF)

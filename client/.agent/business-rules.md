@@ -133,16 +133,18 @@ Landing Page
 ```
 [Usuário vê produto]
     ↓
-[Hover: visualiza preview]
+[Hover: visualiza preview / Click no Card]
     ↓
-[Click "Add to Cart"]
+[Página de Detalhes do Produto]
+    ↓
+[Click "Comprar Agora"]
     ↓
 [Redirecionamento com tracking]
     ↓
 [Página do produto no site afiliado]
 ```
 
-> **Nota:** O botão "Add to Cart" atualmente funciona como redirecionamento direto. Não há carrinho interno.
+> **Nota:** O botão "Comprar Agora" na página de detalhes redireciona para o parceiro.
 
 ### 3. Busca (Futuro)
 
@@ -257,7 +259,7 @@ Eventos a serem trackeados:
 
 - [ ] Busca de produtos
 - [ ] Filtro por categoria
-- [ ] Página de detalhes do produto
+- [/] Página de detalhes do produto (Em progresso)
 - [ ] Carousel de imagens
 - [ ] Favoritos (localStorage)
 

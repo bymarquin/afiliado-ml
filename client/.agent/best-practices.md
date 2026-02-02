@@ -121,20 +121,32 @@ Ordem recomendada (do layout ao visual):
 </button>
 ```
 
-### ❌ Evitar
+### ❌ Evitar (Strict Linting Rules)
 
 ```html
-<!-- Não use valores arbitrários se existir na escala -->
-<div class="p-[15px]">
-  <!-- Use p-4 (16px) -->
+<!-- 1. NÃO use valores arbitrários se existir utilitário -->
+<div class="h-[500px]">
+  <!-- ❌ Erro de Lint -->
+  <!-- Use h-125 (500px / 4) ✅ -->
+</div>
 
-  <!-- Não hardcode cores -->
-  <div class="bg-[#F9D52C]">
-    <!-- Use bg-primary -->
+<!-- 2. NÃO use valores mágicos próximos da escala -->
+<div class="w-[200px]">
+  <!-- ❌ -->
+  <!-- Use w-50 (200px) ✅ -->
+</div>
 
-    <!-- Não exagere em classes -->
-    <div class="p-4 pt-4 pr-4 pb-4 pl-4"><!-- Só p-4 --></div>
-  </div>
+<!-- 3. NÃO ignore redundâncias -->
+<div class="gap-4 md:gap-4">
+  <!-- ❌ -->
+  <!-- Use gap-4 ✅ -->
+</div>
+
+<!-- 4. Sintaxe de Important -->
+<!-- Siga a preferência do linter. Para este projeto: -->
+<div class="bg-gray-950!">
+  <!-- ✅ Sufixo preferred -->
+  <!-- <div class="!bg-gray-950"> ❌ Prefira sufixo se o linter pedir -->
 </div>
 ```
 

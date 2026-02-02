@@ -66,10 +66,9 @@ onMounted(() => {
 
       <!-- Products Grid/Carousel -->
       <div class="relative">
-        <div ref="scrollContainer"
-          class="flex gap-4 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+        <div ref="scrollContainer" class="flex gap-4 overflow-x-auto p-4 snap-x snap-mandatory scrollbar-hide">
           <div v-for="product in products" :key="product.id"
-            class="product-card-wrapper flex-shrink-0 w-[200px] md:w-[220px] snap-start">
+            class="product-card-wrapper shrink-0 w-50 md:w-55 snap-start">
             <ProductCard :product="product" />
           </div>
         </div>

@@ -5,15 +5,15 @@
  */
 
 defineProps({
-    as: {
-        type: String,
-        default: 'div'
-    }
+  as: {
+    type: String,
+    default: 'div'
+  }
 })
 </script>
 
 <template>
-    <component :is="as" class="mx-auto w-full max-w-[1216px] px-4 md:px-6 lg:px-8">
-        <slot />
-    </component>
+  <component :is="as" class="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8">
+    <slot />
+  </component>
 </template>

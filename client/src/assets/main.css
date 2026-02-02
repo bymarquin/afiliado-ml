@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ===========================
    DESIGN TOKENS - E-commerce
@@ -6,16 +6,16 @@
 
 @theme {
   /* Cores do Design (Figma) */
-  --color-gray-950: #0F1113;
-  --color-gray-800: #313F49;
-  --color-gray-400: #AEB7BE;
-  --color-gray-200: #DADDE2;
-  --color-gray-100: #EAEDEE;
-  --color-gray-50: #F4F6F8;
+  --color-gray-950: #0f1113;
+  --color-gray-800: #313f49;
+  --color-gray-400: #aeb7be;
+  --color-gray-200: #dadde2;
+  --color-gray-100: #eaedee;
+  --color-gray-50: #f4f6f8;
 
   /* Cores de Ação */
-  --color-primary: #3B82F6;
-  --color-primary-dark: #2563EB;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
 
   /* Hero Background */
   --color-hero-bg: #545547;
