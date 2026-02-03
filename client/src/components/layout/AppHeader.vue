@@ -1,19 +1,10 @@
 <script setup>
-import { ref } from 'vue'
 import BaseContainer from '@/components/ui/BaseContainer.vue'
+import { useNavigation } from '@/composables/useNavigation'
+import { useMobileMenu } from '@/composables/useMobileMenu'
 
-const isMobileMenuOpen = ref(false)
-
-const navLinks = [
-    { label: 'Shop', href: '#' },
-    { label: 'Categories', href: '#' },
-    { label: 'Sell', href: '#' },
-    { label: 'Contact us', href: '#' }
-]
-
-const toggleMobileMenu = () => {
-    isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
+const { navLinks } = useNavigation()
+const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu()
 </script>
 
 <template>

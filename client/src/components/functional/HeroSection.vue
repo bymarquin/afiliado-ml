@@ -65,7 +65,7 @@ const handleImageError = (e) => {
 </script>
 
 <template>
-  <section ref="heroContainer" class="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-12 pb-12">
+  <section ref="heroContainer" class="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-2 pb-8">
     <!-- Subtle Background Gradient/Blob -->
     <div class="absolute -top-1/5 -left-1/10 w-3/5 h-3/5 rounded-full bg-primary/5 blur-3xl pointer-events-none">
     </div>
@@ -85,12 +85,12 @@ const handleImageError = (e) => {
 
           <!-- Animated Badge -->
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 mb-6 transform translate-y-4 opacity-0">
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-6 transform translate-y-4 opacity-0">
             <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-900 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-900"></span>
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-600 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
             </span>
-            <span class="text-xs font-bold text-gray-900 uppercase tracking-wider">Summer Sale 2026</span>
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Summer Sale 2026</span>
           </div>
 
           <!-- Headline -->
@@ -108,12 +108,11 @@ const handleImageError = (e) => {
           <!-- CTAs -->
           <div
             class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto transform translate-y-4 opacity-0 mb-10">
-            <BaseButton variant="primary" size="lg"
-              class="w-full sm:w-auto font-medium shadow-xl shadow-gray-950/10 bg-gray-950! text-white hover:bg-gray-800!">
+            <BaseButton variant="primary" size="lg" class="w-full sm:w-auto font-medium shadow-xl shadow-gray-950/10">
               Start Shopping
               <ArrowRight class="w-5 h-5 ml-2" />
             </BaseButton>
-            <BaseButton variant="outline" size="lg"
+            <BaseButton variant="secondary" size="lg"
               class="w-full sm:w-auto border-gray-200 text-gray-950 hover:bg-gray-50">
               <Play class="w-4 h-4 mr-2 fill-current" />
               How it works
@@ -151,15 +150,18 @@ const handleImageError = (e) => {
 
           <!-- Image Container with Rounded Corners -->
           <div
-            class="relative w-full h-9/10 lg:w-9/10 transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center overflow-hidden rounded-3xl shadow-2xl"
+            class="relative w-full h-9/10 lg:w-9/10 transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center"
             :style="cardStyle">
 
-            <!-- Main Image with rounded corners -->
-            <img :src="heroImage" @error="handleImageError" alt="Happy Shopper"
-              class="w-full h-full object-cover scale-105"
-              style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%);" />
+            <!-- Image Wrapper with overflow hidden for rounded corners -->
+            <div class="w-full h-full overflow-hidden rounded-3xl shadow-2xl">
+              <!-- Main Image with rounded corners -->
+              <img :src="heroImage" @error="handleImageError" alt="Happy Shopper"
+                class="w-full h-full object-cover scale-105"
+                style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%);" />
+            </div>
 
-            <!-- Floating Badge 1: Easy Shop - Top Left Corner -->
+            <!-- Floating Badge 1: Easy Shop - Top Left Corner (outside overflow container) -->
             <div
               class="absolute -top-4 -left-4 lg:-top-6 lg:-left-6 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-gray-100 z-20 flex items-center gap-3 animate-float-slow">
               <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -171,7 +173,7 @@ const handleImageError = (e) => {
               </div>
             </div>
 
-            <!-- Floating Badge 2: Promo - Bottom Right Corner -->
+            <!-- Floating Badge 2: Promo - Bottom Right Corner (outside overflow container) -->
             <div
               class="absolute -bottom-4 -right-4 lg:-bottom-6 lg:-right-6 bg-gray-950 text-white px-5 py-3 rounded-2xl shadow-xl z-20 animate-float-delayed">
               <p class="text-[10px] uppercase text-gray-400 tracking-wide mb-0.5">Limited Time</p>
