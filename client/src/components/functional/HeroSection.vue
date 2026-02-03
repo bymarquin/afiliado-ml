@@ -55,10 +55,9 @@ onMounted(() => {
     )
 })
 
-// Happy person with shopping bags/package - Premium/Elegant
-// Candidate 1: Fashionable woman with bags (high reliability)
-const heroImage = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop"
-const fallbackImage = "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop"
+// Imagem premium local - Pessoa estilosa com sacolas de compras
+const heroImage = "/images/hero-shopper.png"
+const fallbackImage = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop"
 
 const handleImageError = (e) => {
   e.target.src = fallbackImage
@@ -150,33 +149,33 @@ const handleImageError = (e) => {
             class="absolute inset-0 bg-linear-to-tr from-blue-100/30 to-transparent blur-3xl opacity-60 rounded-full pointer-events-none scale-90">
           </div>
 
-          <!-- Image Container - No Box, Natural Blend -->
+          <!-- Image Container with Rounded Corners -->
           <div
-            class="relative w-full h-9/10 lg:w-9/10 transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center"
+            class="relative w-full h-9/10 lg:w-9/10 transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center overflow-hidden rounded-3xl shadow-2xl"
             :style="cardStyle">
 
-            <!-- Main Image with mix-blend-multiply to remove white background -->
+            <!-- Main Image with rounded corners -->
             <img :src="heroImage" @error="handleImageError" alt="Happy Shopper"
-              class="w-full h-full object-contain mix-blend-multiply scale-110 drop-shadow-xl"
-              style="mask-image: linear-gradient(to bottom, black 85%, transparent 100%);" />
+              class="w-full h-full object-cover scale-105"
+              style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%);" />
 
-            <!-- Floating Badge 1: New Arrival -->
+            <!-- Floating Badge 1: Easy Shop - Top Left Corner -->
             <div
-              class="absolute top-20 left-0 bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-white/50 z-20 flex items-center gap-3 animate-float-slow">
-              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              class="absolute -top-4 -left-4 lg:-top-6 lg:-left-6 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-gray-100 z-20 flex items-center gap-3 animate-float-slow">
+              <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                 <ShoppingBag class="w-5 h-5" />
               </div>
               <div>
-                <p class="text-[10px] uppercase font-bold text-gray-400">Easy Shop</p>
-                <p class="text-xs font-bold text-gray-950">Free Returns</p>
+                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wide">Easy Shop</p>
+                <p class="text-sm font-bold text-gray-950">Free Returns</p>
               </div>
             </div>
 
-            <!-- Floating Badge 2: Price/Promo -->
+            <!-- Floating Badge 2: Promo - Bottom Right Corner -->
             <div
-              class="absolute bottom-32 right-0 bg-gray-950 text-white px-5 py-3 rounded-2xl shadow-xl z-20 animate-float-delayed">
-              <p class="text-xs text-gray-400 mb-1">Limited Time</p>
-              <p class="text-xl font-bold">Free Shipping</p>
+              class="absolute -bottom-4 -right-4 lg:-bottom-6 lg:-right-6 bg-gray-950 text-white px-5 py-3 rounded-2xl shadow-xl z-20 animate-float-delayed">
+              <p class="text-[10px] uppercase text-gray-400 tracking-wide mb-0.5">Limited Time</p>
+              <p class="text-lg font-bold">Free Shipping</p>
             </div>
 
           </div>
