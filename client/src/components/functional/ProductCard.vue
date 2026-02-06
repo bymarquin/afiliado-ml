@@ -1,5 +1,6 @@
 <script setup>
 import BaseButton from '@/components/ui/BaseButton.vue'
+import ClickSparkWrapper from '@/components/ui/ClickSparkWrapper.vue'
 import { Star } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -16,14 +17,14 @@ const reviewCount = props.product.reviewCount || Math.floor(Math.random() * 100)
 
 <template>
   <article
-    class="group flex flex-col h-full bg-white rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-gray-900/5 hover:-translate-y-1">
+    class="group flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-gray-900/10 transition-all duration-300 hover:-translate-y-1">
     <!-- Image Container -->
     <RouterLink :to="{ name: 'ProductDetails', params: { id: product.id } }"
       class="relative aspect-square bg-gray-50 overflow-hidden cursor-pointer">
 
       <!-- Image -->
       <img v-if="product.image" :src="product.image" :alt="product.name"
-        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
 
       <!-- Elegant Placeholder -->
       <div v-else class="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-50 to-gray-100">
@@ -76,13 +77,15 @@ const reviewCount = props.product.reviewCount || Math.floor(Math.random() * 100)
       </div>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA with Click Spark -->
     <div class="px-4 pb-4">
-      <BaseButton :to="{ name: 'ProductDetails', params: { id: product.id } }"
-        class="w-full bg-gray-950! hover:bg-gray-800! text-white justify-center py-3 rounded-xl border-none font-medium"
-        size="md">
-        Ver Detalhes
-      </BaseButton>
+      <ClickSparkWrapper sparkColor="#3b82f6" :sparkRadius="45" :sparkCount="10">
+        <BaseButton :to="{ name: 'ProductDetails', params: { id: product.id } }"
+          class="w-full bg-gray-950! hover:bg-gray-800! text-white justify-center py-3 rounded-xl border-none font-medium"
+          size="md">
+          Ver Detalhes
+        </BaseButton>
+      </ClickSparkWrapper>
     </div>
   </article>
 </template>

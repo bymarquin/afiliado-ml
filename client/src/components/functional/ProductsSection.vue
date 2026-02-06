@@ -14,7 +14,7 @@ const { products } = useProducts()
 const { scrollContainer, scrollLeft, scrollRight } = useProductCarousel()
 
 onMounted(() => {
-  gsap.set('.product-card-wrapper', { autoAlpha: 1, x: 0 })
+  gsap.set('.product-card-wrapper', { autoAlpha: 1, x: 0, filter: 'blur(0px)' })
 
   gsap.from('.product-card-wrapper', {
     scrollTrigger: {
@@ -22,11 +22,12 @@ onMounted(() => {
       start: 'top 80%',
       once: true
     },
-    x: 40,
+    x: 60,
     autoAlpha: 0,
-    duration: 0.8,
-    stagger: 0.08,
-    ease: 'power2.out'
+    filter: 'blur(8px)',
+    duration: 1,
+    stagger: 0.1,
+    ease: 'power3.out'
   })
 })
 </script>
@@ -34,7 +35,8 @@ onMounted(() => {
 <template>
   <section class="products-section relative py-20 md:py-28 bg-gray-50/50 overflow-hidden">
     <!-- Subtle Background -->
-    <div class="absolute -top-1/3 -left-1/4 w-1/2 h-1/2 rounded-full bg-blue-50/30 blur-3xl pointer-events-none"></div>
+    <div class="absolute -top-1/3 -left-1/4 w-1/2 h-1/2 rounded-full bg-blue-50/30 blur-3xl pointer-events-none">
+    </div>
 
     <BaseContainer class="relative z-10">
       <!-- Header -->

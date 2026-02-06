@@ -4,6 +4,8 @@ import { useMouseInElement } from '@vueuse/core'
 import gsap from 'gsap'
 import BaseContainer from '@/components/ui/BaseContainer.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import ClickSparkWrapper from '@/components/ui/ClickSparkWrapper.vue'
+import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
 import { ArrowRight, Play, Star, ShoppingBag } from 'lucide-vue-next'
 
 // Refs
@@ -34,24 +36,30 @@ const cardStyle = computed(() => {
   }
 })
 
+// Animated Counter para Social Proof
+const { count: shoppersCount, elementRef: counterRef } = useAnimatedCounter(5000, 2500)
+
 onMounted(() => {
   const tl = gsap.timeline()
 
   gsap.set([heroContent.value.children, heroImageContainer.value], {
-    autoAlpha: 0
+    autoAlpha: 0,
+    filter: 'blur(8px)'
   })
 
+  // Animação mais cinematográfica com blur de entrada
   tl.to(heroContent.value.children, {
     y: 0,
     autoAlpha: 1,
-    duration: 0.8,
-    stagger: 0.05,
-    ease: 'power2.out'
+    filter: 'blur(0px)',
+    duration: 1,
+    stagger: 0.12,
+    ease: 'power3.out'
   })
     .fromTo(heroImageContainer.value,
-      { x: 30, autoAlpha: 0, scale: 0.95 },
-      { x: 0, autoAlpha: 1, scale: 1, duration: 1.2, ease: 'power2.out' },
-      "-=0.6"
+      { x: 50, autoAlpha: 0, scale: 0.9, filter: 'blur(10px)' },
+      { x: 0, autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 1.4, ease: 'power3.out' },
+      "-=0.8"
     )
 })
 
@@ -108,15 +116,19 @@ const handleImageError = (e) => {
           <!-- CTAs -->
           <div
             class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto transform translate-y-4 opacity-0 mb-10">
-            <BaseButton variant="primary" size="lg" class="w-full sm:w-auto font-medium shadow-xl shadow-gray-950/10">
-              Start Shopping
-              <ArrowRight class="w-5 h-5 ml-2" />
-            </BaseButton>
-            <BaseButton variant="secondary" size="lg"
-              class="w-full sm:w-auto border-gray-200 text-gray-950 hover:bg-gray-50">
-              <Play class="w-4 h-4 mr-2 fill-current" />
-              How it works
-            </BaseButton>
+            <ClickSparkWrapper sparkColor="#3b82f6" :sparkRadius="50" :sparkCount="12">
+              <BaseButton variant="primary" size="lg" class="w-full sm:w-auto font-medium whitespace-nowrap shadow-xl shadow-gray-950/10">
+                Start Shopping
+                <ArrowRight class="w-5 h-5 ml-2" />
+              </BaseButton>
+            </ClickSparkWrapper>
+            <ClickSparkWrapper sparkColor="#6b7280" :sparkRadius="40" :sparkCount="8">
+              <BaseButton variant="secondary" size="lg"
+                class="w-full sm:w-auto border-gray-200 text-gray-950 hover:bg-gray-50">
+                <Play class="w-4 h-4 mr-2 fill-current" />
+                How it works
+              </BaseButton>
+            </ClickSparkWrapper>
           </div>
 
           <!-- Social Proof -->
@@ -127,12 +139,12 @@ const handleImageError = (e) => {
                 <img :src="`https://i.pravatar.cc/100?img=${i + 25}`" alt="User" class="w-full h-full object-cover">
               </div>
             </div>
-            <div class="flex flex-col">
+            <div ref="counterRef" class="flex flex-col">
               <div class="flex text-yellow-500 text-xs mb-0.5 space-x-0.5">
                 <Star v-for="s in 5" :key="s" class="w-4 h-4 fill-current" />
               </div>
               <p class="text-xs font-medium text-gray-600">
-                <span class="font-bold text-gray-950">5,000+</span> happy shoppers
+                <span class="font-bold text-gray-950">{{ shoppersCount.toLocaleString('pt-BR') }}+</span> happy shoppers
               </p>
             </div>
           </div>

@@ -4,14 +4,22 @@ import BaseContainer from '@/components/ui/BaseContainer.vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useBenefits } from '@/composables/useBenefits'
+import { useTiltCard } from '@/composables/useTiltCard'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const { benefits, iconComponents } = useBenefits()
 
+// Criar instâncias de tilt para cada card
+const tiltCards = benefits.map(() => useTiltCard({
+  rotateAmplitude: 10,
+  scaleOnHover: 1.03,
+  transitionDuration: 0.3
+}))
+
 onMounted(() => {
   // Garante que os cards estejam visíveis inicialmente
-  gsap.set('.benefit-card', { autoAlpha: 1, y: 0 })
+  gsap.set('.benefit-card', { autoAlpha: 1, y: 0, filter: 'blur(0px)' })
 
   gsap.from('.benefit-card', {
     scrollTrigger: {
@@ -19,11 +27,12 @@ onMounted(() => {
       start: 'top 85%',
       once: true
     },
-    y: 30,
+    y: 40,
     autoAlpha: 0,
-    duration: 0.6,
-    stagger: 0.1,
-    ease: 'power2.out'
+    filter: 'blur(6px)',
+    duration: 0.8,
+    stagger: 0.12,
+    ease: 'power3.out'
   })
 })
 </script>
@@ -49,8 +58,11 @@ onMounted(() => {
 
       <!-- Benefits Grid -->
       <div class="benefits-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        <div v-for="benefit in benefits" :key="benefit.title"
-          class="benefit-card group relative bg-white rounded-2xl p-6 lg:p-8 border border-gray-100 hover:border-blue-100 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1">
+        <div v-for="(benefit, index) in benefits" :key="benefit.title"
+          :ref="el => { if (el) tiltCards[index].elementRef.value = el }" :style="tiltCards[index].style.value"
+          @mousemove="tiltCards[index].onMouseMove" @mouseenter="tiltCards[index].onMouseEnter"
+          @mouseleave="tiltCards[index].onMouseLeave"
+          class="benefit-card group relative bg-white rounded-2xl p-6 lg:p-8 border border-gray-100 hover:border-blue-100 transition-colors duration-300 hover:shadow-xl hover:shadow-blue-500/5">
 
           <!-- Icon Circle with Gradient Background on Hover -->
           <div
