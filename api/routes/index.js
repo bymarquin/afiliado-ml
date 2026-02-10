@@ -1,7 +1,9 @@
-const express = require("express");
+import express from "express";
+import scrapingRoutes from "./scraping.js";
+
 const router = express.Router();
 
-// Altere para registrar as rotas diretamente em /api
-router.use("/", require("./scraping"));
+// Registra as rotas de scraping diretamente em /api
+router.use("/", scrapingRoutes);
 
-module.exports = router;
+export default router;

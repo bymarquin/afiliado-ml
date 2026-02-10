@@ -7,6 +7,7 @@
   },
   "keywords": [],
   "author": "BSC",
+  "type": "module",
   "license": "ISC",
   "description": "",
   "dependencies": {

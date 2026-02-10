@@ -1,104 +1,74 @@
-const axios = require("axios");
-const cheerio = require("cheerio");
+import axios from "axios";
 
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-const ACCEPT_LANGUAGE = "pt-BR,pt;q=0.9";
-
-/**
- * Realiza o web scraping de um URL
- * @param {string} url - URL do produto a fazer scraping
- * @returns {Promise<Object>} Dados do produto extraídos
- */
-async function scrapeProduct(url) {
-  try {
-    const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        "Accept-Language": ACCEPT_LANGUAGE,
-      },
-    });
-
-    const $ = cheerio.load(data);
-
-    // Extrai o preço
-    const price = extractPrice($);
-
-    // Extrai o preço original
-    const original_price = extractOriginalPrice($);
-
-    // Monta o resultado
-    const result = {
-      product_name: $(".ui-pdp-title").text().trim() || "N/A",
-      original_price: original_price,
-      price: price,
-      description:
-        $(".ui-pdp-description__content").text().trim() ||
-        "Sem descrição disponível",
-      main_image: $('meta[property="og:image"]').attr("content"),
-      link_original: `${url}`,
-    };
-
-    return result;
-  } catch (error) {
-    throw new Error(`Erro ao fazer scraping: ${error.message}`);
+export async function scrapeProduct(url) {
+  const url_original = url;
+  // Corrige: regex mais robusto e validação
+  const product_id_match = url_original.match(/MLB[\w\d]+/);
+  if (!product_id_match || !product_id_match[0]) {
+    throw new Error("ID do produto não encontrado na URL.");
   }
+  const formatted_id = product_id_match[0];
+  const url_api = `https://www.mercadolivre.com.br/p/api/deferred?id=${formatted_id}&app=pdp&component_ids=open_box_alternatives&allow_test_items=false`;
+  return await fetchAndSave(url_api, url);
 }
 
-/**
- * Extrai o preço atual do produto
- * @param {Object} $ - Instância do Cheerio
- * @returns {string|null} Preço formatado ou null
- */
-function extractPrice($) {
-  let price = null;
+const client = axios.create({
+  headers: {
+    "User-Agent":
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    Accept: "application/json, text/plain, */*",
+    "Accept-Language": "pt-BR,pt;q=0.9",
+    Referer: "https://www.mercadolivre.com.br/",
+  },
+  timeout: 15000,
+});
 
-  // Busca pelo preço com desconto (atual) dentro da div#price
-  const priceDiv = $("#price");
-  // Busca o meta[itemprop=price] dentro da div#price
-  const metaPrice = priceDiv.find('meta[itemprop="price"]').attr("content");
-  if (metaPrice) {
-    price = `R$ ${metaPrice.replace(".", ",")}`;
-    return price;
+async function fetchAndSave(url, original_url) {
+  const url_af = url;
+  const response = await client.get(url);
+  const products = [];
+
+  const json =
+    typeof response.data === "string"
+      ? JSON.parse(response.data)
+      : response.data;
+
+  // Corrige: validação robusta da estrutura do JSON
+  if (!json.schema || !Array.isArray(json.schema) || !json.schema[0]) {
+    throw new Error("Dados do produto não encontrados na resposta da API.");
   }
-  // Busca o valor fracionado (ex: 4.749)
-  const fraction = priceDiv
-    .find(".andes-money-amount__fraction")
-    .first()
-    .text();
-  // Busca os centavos (ex: 05)
-  const cents = priceDiv.find(".andes-money-amount__cents").first().text();
-  if (fraction) {
-    price = `R$ ${fraction}${cents ? "," + cents : ",00"}`;
-  }
-  return price;
+
+  const product_id = json.id;
+  const product_title = json.schema[0].name;
+  const product_image = json.schema[0].image;
+  const product_url = original_url;
+  const product_rate = json.schema[0].aggregateRating?.ratingValue;
+  const product_rateCount = json.schema[0].aggregateRating?.ratingCount;
+  const product_price = json.schema[0].offers?.price;
+  const product_originalprice =
+    json.components?.track?.melidata_event?.event_data?.original_price;
+  const product_description = json.schema[0].description;
+  const product_review1 = json.schema[0].review?.[0]?.reviewBody;
+  const product_review2 = json.schema[0].review?.[1]?.reviewBody;
+  const product_review3 = json.schema[0].review?.[2]?.reviewBody;
+
+  const product = {
+    id: product_id,
+    title: product_title,
+    image: product_image,
+    url: product_url,
+    url_afiliado: url_af,
+    rate: product_rate,
+    rateCount: product_rateCount,
+    original_price: product_originalprice,
+    price: product_price,
+    description: product_description,
+    review1: product_review1,
+    review2: product_review2,
+    review3: product_review3,
+  };
+  products.push(product);
+  const formatted = JSON.stringify(products, null, 2);
+
+  return formatted;
 }
-
-/**
- * Extrai o preço original (antes do desconto)
- * @param {Object} $ - Instância do Cheerio
- * @returns {string|null} Preço original formatado ou null
- */
-function extractOriginalPrice($) {
-  let original_price = null;
-
-  // Busca pelo preço original (sem desconto) dentro da div#price
-  // Seleciona o <s> com as classes de preço anterior dentro da div#price
-  const originalPriceEl = $("#price s.ui-pdp-price__original-value");
-  if (originalPriceEl.length) {
-    const oldFraction = originalPriceEl
-      .find(".andes-money-amount__fraction")
-      .text();
-    const oldCents = originalPriceEl.find(".andes-money-amount__cents").text();
-    if (oldFraction) {
-      original_price = `R$ ${oldFraction}${oldCents ? "," + oldCents : ",00"}`;
-    }
-  }
-  return original_price;
-}
-
-module.exports = {
-  scrapeProduct,
-  extractPrice,
-  extractOriginalPrice,
-};

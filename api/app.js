@@ -1,9 +1,9 @@
-const express = require("express");
-require("dotenv").config();
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
+import { config as configDotenv } from "dotenv";
+import routes from "./routes/index.js";
 
-// Importa as rotas
-const routes = require("./routes");
+configDotenv();
 
 const app = express();
 

@@ -1,4 +1,4 @@
-const scrapingService = require("../services/scraping");
+import { scrapeProduct as scrapeProductService } from "../services/scraping.js";
 
 /**
  * Controller para gerenciar requisições de scraping
@@ -9,7 +9,7 @@ const scrapingService = require("../services/scraping");
  * @param {Object} req - Objeto da requisição Express
  * @param {Object} res - Objeto da resposta Express
  */
-async function scrapeProduct(req, res) {
+export async function scrapeProductController(req, res) {
   const { url } = req.query;
 
   // Valida se a URL foi fornecida
@@ -31,11 +31,12 @@ async function scrapeProduct(req, res) {
   }
 
   try {
-    const productData = await scrapingService.scrapeProduct(url);
-
+    const productData = await scrapeProductService(url);
+    const parsedData =
+      typeof productData === "string" ? JSON.parse(productData) : productData;
     res.json({
       success: true,
-      data: productData,
+      data: parsedData,
     });
   } catch (error) {
     console.error("Erro no controller de scraping:", error.message);
@@ -60,7 +61,3 @@ function isValidUrl(url) {
     return false;
   }
 }
-
-module.exports = {
-  scrapeProduct,
-};

@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import { scrapeProductController } from "../controllers/scrapingController.js";
+
 const router = express.Router();
-const scrapingController = require("../controllers/scrapingController");
 
 /**
  * GET /api/scrape
@@ -12,6 +13,6 @@ const scrapingController = require("../controllers/scrapingController");
  *   GET /api/scrape?url=https://www.mercadolivre.com.br/...
  *   ?url={link do mercado livre}
  */
-router.get("/scrape", scrapingController.scrapeProduct);
+router.get("/scrape", scrapeProductController);
 
-module.exports = router;
+export default router;
