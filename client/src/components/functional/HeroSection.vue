@@ -6,7 +6,7 @@ import BaseContainer from '@/components/ui/BaseContainer.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ClickSparkWrapper from '@/components/ui/ClickSparkWrapper.vue'
 import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
-import { ArrowRight, Play, Star, ShoppingBag } from 'lucide-vue-next'
+import { ArrowRight, Play, Star } from 'lucide-vue-next'
 
 // Refs
 const heroContainer = ref(null)
@@ -86,7 +86,7 @@ const handleImageError = (e) => {
 
 
     <BaseContainer class="w-full relative z-10">
-      <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div class="flex flex-col lg:flex-row gap-60 lg:justify-between items-center">
 
         <!-- Left Column: Content -->
         <div ref="heroContent" class="flex flex-col items-start text-left z-10">
@@ -103,8 +103,8 @@ const handleImageError = (e) => {
 
           <!-- Headline -->
           <h1
-            class="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-950 leading-[0.95] tracking-tight mb-6 transform translate-y-4 opacity-0 max-w-xl">
-            Upgrade your <br class="hidden lg:block"> lifestyle today.
+            class="text-4xl md:text-5xl lg:text-7xl font-bold tracking-[-3px] text-gray-950 leading-[0.95] mb-6 transform translate-y-4 opacity-0 max-w-xl">
+            Upgrade your lifestyle today.
           </h1>
 
           <!-- Description -->
@@ -117,14 +117,15 @@ const handleImageError = (e) => {
           <div
             class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto transform translate-y-4 opacity-0 mb-10">
             <ClickSparkWrapper sparkColor="#3b82f6" :sparkRadius="50" :sparkCount="12">
-              <BaseButton variant="primary" size="lg" class="w-full sm:w-auto font-medium whitespace-nowrap shadow-xl shadow-gray-950/10">
+              <BaseButton variant="primary" size="lg"
+                class="w-full sm:w-auto font-medium whitespace-nowrap shadow-xl shadow-gray-950/10">
                 Start Shopping
                 <ArrowRight class="w-5 h-5 ml-2" />
               </BaseButton>
             </ClickSparkWrapper>
             <ClickSparkWrapper sparkColor="#6b7280" :sparkRadius="40" :sparkCount="8">
               <BaseButton variant="secondary" size="lg"
-                class="w-full sm:w-auto border-gray-200 text-gray-950 hover:bg-gray-50">
+                class="w-full sm:w-auto border-gray-200 whitespace-nowrap text-gray-950 hover:bg-gray-50">
                 <Play class="w-4 h-4 mr-2 fill-current" />
                 How it works
               </BaseButton>
@@ -162,34 +163,15 @@ const handleImageError = (e) => {
 
           <!-- Image Container with Rounded Corners -->
           <div
-            class="relative w-full h-9/10 lg:w-9/10 transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center"
+            class="relative w-full h-9/10 lg:w-full transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center"
             :style="cardStyle">
 
             <!-- Image Wrapper with overflow hidden for rounded corners -->
-            <div class="w-full h-full overflow-hidden rounded-3xl shadow-2xl">
+            <div class="w-full h-full overflow-hidden rounded-3xl shadow-2xl relative z-10">
               <!-- Main Image with rounded corners -->
               <img :src="heroImage" @error="handleImageError" alt="Happy Shopper"
                 class="w-full h-full object-cover scale-105"
                 style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%);" />
-            </div>
-
-            <!-- Floating Badge 1: Easy Shop - Top Left Corner (outside overflow container) -->
-            <div
-              class="absolute -top-4 -left-4 lg:-top-6 lg:-left-6 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-gray-100 z-20 flex items-center gap-3 animate-float-slow">
-              <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                <ShoppingBag class="w-5 h-5" />
-              </div>
-              <div>
-                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wide">Easy Shop</p>
-                <p class="text-sm font-bold text-gray-950">Free Returns</p>
-              </div>
-            </div>
-
-            <!-- Floating Badge 2: Promo - Bottom Right Corner (outside overflow container) -->
-            <div
-              class="absolute -bottom-4 -right-4 lg:-bottom-6 lg:-right-6 bg-gray-950 text-white px-5 py-3 rounded-2xl shadow-xl z-20 animate-float-delayed">
-              <p class="text-[10px] uppercase text-gray-400 tracking-wide mb-0.5">Limited Time</p>
-              <p class="text-lg font-bold">Free Shipping</p>
             </div>
 
           </div>
@@ -203,38 +185,5 @@ const handleImageError = (e) => {
 <style scoped>
 .perspective-container {
   perspective: 1000px;
-}
-
-/* Custom Float Animations */
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes float-delayed {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float-slow {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float-delayed 7s ease-in-out infinite 1s;
 }
 </style>
