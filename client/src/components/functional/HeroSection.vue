@@ -4,7 +4,9 @@ import { useMouseInElement } from '@vueuse/core'
 import gsap from 'gsap'
 import BaseContainer from '@/components/ui/BaseContainer.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { ArrowRight, Play, Star, ShoppingBag } from 'lucide-vue-next'
+import ClickSparkWrapper from '@/components/ui/ClickSparkWrapper.vue'
+import { useAnimatedCounter } from '@/composables/useAnimatedCounter'
+import { ArrowRight, Play, Star } from 'lucide-vue-next'
 
 // Refs
 const heroContainer = ref(null)
@@ -34,24 +36,30 @@ const cardStyle = computed(() => {
   }
 })
 
+// Animated Counter para Social Proof
+const { count: shoppersCount, elementRef: counterRef } = useAnimatedCounter(5000, 2500)
+
 onMounted(() => {
   const tl = gsap.timeline()
 
   gsap.set([heroContent.value.children, heroImageContainer.value], {
-    autoAlpha: 0
+    autoAlpha: 0,
+    filter: 'blur(8px)'
   })
 
+  // Animação mais cinematográfica com blur de entrada
   tl.to(heroContent.value.children, {
     y: 0,
     autoAlpha: 1,
-    duration: 0.8,
-    stagger: 0.05,
-    ease: 'power2.out'
+    filter: 'blur(0px)',
+    duration: 1,
+    stagger: 0.12,
+    ease: 'power3.out'
   })
     .fromTo(heroImageContainer.value,
-      { x: 30, autoAlpha: 0, scale: 0.95 },
-      { x: 0, autoAlpha: 1, scale: 1, duration: 1.2, ease: 'power2.out' },
-      "-=0.6"
+      { x: 50, autoAlpha: 0, scale: 0.9, filter: 'blur(10px)' },
+      { x: 0, autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 1.4, ease: 'power3.out' },
+      "-=0.8"
     )
 })
 
@@ -65,7 +73,7 @@ const handleImageError = (e) => {
 </script>
 
 <template>
-  <section ref="heroContainer" class="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-12 pb-12">
+  <section ref="heroContainer" class="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-2 pb-8">
     <!-- Subtle Background Gradient/Blob -->
     <div class="absolute -top-1/5 -left-1/10 w-3/5 h-3/5 rounded-full bg-primary/5 blur-3xl pointer-events-none">
     </div>
@@ -78,25 +86,25 @@ const handleImageError = (e) => {
 
 
     <BaseContainer class="w-full relative z-10">
-      <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div class="flex flex-col lg:flex-row gap-60 lg:justify-between items-center">
 
         <!-- Left Column: Content -->
         <div ref="heroContent" class="flex flex-col items-start text-left z-10">
 
           <!-- Animated Badge -->
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 mb-6 transform translate-y-4 opacity-0">
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-6 transform translate-y-4 opacity-0">
             <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-900 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-900"></span>
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-600 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
             </span>
-            <span class="text-xs font-bold text-gray-900 uppercase tracking-wider">Summer Sale 2026</span>
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Summer Sale 2026</span>
           </div>
 
           <!-- Headline -->
           <h1
-            class="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-950 leading-[0.95] tracking-tight mb-6 transform translate-y-4 opacity-0 max-w-xl">
-            Upgrade your <br class="hidden lg:block"> lifestyle today.
+            class="text-4xl md:text-5xl lg:text-7xl font-bold tracking-[-3px] text-gray-950 leading-[0.95] mb-6 transform translate-y-4 opacity-0 max-w-xl">
+            Upgrade your lifestyle today.
           </h1>
 
           <!-- Description -->
@@ -108,16 +116,20 @@ const handleImageError = (e) => {
           <!-- CTAs -->
           <div
             class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto transform translate-y-4 opacity-0 mb-10">
-            <BaseButton variant="primary" size="lg"
-              class="w-full sm:w-auto font-medium shadow-xl shadow-gray-950/10 bg-gray-950! text-white hover:bg-gray-800!">
-              Start Shopping
-              <ArrowRight class="w-5 h-5 ml-2" />
-            </BaseButton>
-            <BaseButton variant="outline" size="lg"
-              class="w-full sm:w-auto border-gray-200 text-gray-950 hover:bg-gray-50">
-              <Play class="w-4 h-4 mr-2 fill-current" />
-              How it works
-            </BaseButton>
+            <ClickSparkWrapper sparkColor="#3b82f6" :sparkRadius="50" :sparkCount="12">
+              <BaseButton variant="primary" size="lg"
+                class="w-full sm:w-auto font-medium whitespace-nowrap shadow-xl shadow-gray-950/10">
+                Start Shopping
+                <ArrowRight class="w-5 h-5 ml-2" />
+              </BaseButton>
+            </ClickSparkWrapper>
+            <ClickSparkWrapper sparkColor="#6b7280" :sparkRadius="40" :sparkCount="8">
+              <BaseButton variant="secondary" size="lg"
+                class="w-full sm:w-auto border-gray-200 whitespace-nowrap text-gray-950 hover:bg-gray-50">
+                <Play class="w-4 h-4 mr-2 fill-current" />
+                How it works
+              </BaseButton>
+            </ClickSparkWrapper>
           </div>
 
           <!-- Social Proof -->
@@ -128,12 +140,12 @@ const handleImageError = (e) => {
                 <img :src="`https://i.pravatar.cc/100?img=${i + 25}`" alt="User" class="w-full h-full object-cover">
               </div>
             </div>
-            <div class="flex flex-col">
+            <div ref="counterRef" class="flex flex-col">
               <div class="flex text-yellow-500 text-xs mb-0.5 space-x-0.5">
                 <Star v-for="s in 5" :key="s" class="w-4 h-4 fill-current" />
               </div>
               <p class="text-xs font-medium text-gray-600">
-                <span class="font-bold text-gray-950">5,000+</span> happy shoppers
+                <span class="font-bold text-gray-950">{{ shoppersCount.toLocaleString('pt-BR') }}+</span> happy shoppers
               </p>
             </div>
           </div>
@@ -151,31 +163,15 @@ const handleImageError = (e) => {
 
           <!-- Image Container with Rounded Corners -->
           <div
-            class="relative w-full h-9/10 lg:w-9/10 transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center overflow-hidden rounded-3xl shadow-2xl"
+            class="relative w-full h-9/10 lg:w-full transform transition-all duration-100 ease-out will-change-transform flex items-center justify-center"
             :style="cardStyle">
 
-            <!-- Main Image with rounded corners -->
-            <img :src="heroImage" @error="handleImageError" alt="Happy Shopper"
-              class="w-full h-full object-cover scale-105"
-              style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%);" />
-
-            <!-- Floating Badge 1: Easy Shop - Top Left Corner -->
-            <div
-              class="absolute -top-4 -left-4 lg:-top-6 lg:-left-6 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl shadow-lg border border-gray-100 z-20 flex items-center gap-3 animate-float-slow">
-              <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                <ShoppingBag class="w-5 h-5" />
-              </div>
-              <div>
-                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wide">Easy Shop</p>
-                <p class="text-sm font-bold text-gray-950">Free Returns</p>
-              </div>
-            </div>
-
-            <!-- Floating Badge 2: Promo - Bottom Right Corner -->
-            <div
-              class="absolute -bottom-4 -right-4 lg:-bottom-6 lg:-right-6 bg-gray-950 text-white px-5 py-3 rounded-2xl shadow-xl z-20 animate-float-delayed">
-              <p class="text-[10px] uppercase text-gray-400 tracking-wide mb-0.5">Limited Time</p>
-              <p class="text-lg font-bold">Free Shipping</p>
+            <!-- Image Wrapper with overflow hidden for rounded corners -->
+            <div class="w-full h-full overflow-hidden rounded-3xl shadow-2xl relative z-10">
+              <!-- Main Image with rounded corners -->
+              <img :src="heroImage" @error="handleImageError" alt="Happy Shopper"
+                class="w-full h-full object-cover scale-105"
+                style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%);" />
             </div>
 
           </div>
@@ -189,38 +185,5 @@ const handleImageError = (e) => {
 <style scoped>
 .perspective-container {
   perspective: 1000px;
-}
-
-/* Custom Float Animations */
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes float-delayed {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float-slow {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float-delayed 7s ease-in-out infinite 1s;
 }
 </style>

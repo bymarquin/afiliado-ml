@@ -1,38 +1,31 @@
 <script setup>
-import AppHeader from '@/components/layout/AppHeader.vue'
 import HeroSection from '@/components/functional/HeroSection.vue'
 import BenefitsSection from '@/components/functional/BenefitsSection.vue'
 import ProductsSection from '@/components/functional/ProductsSection.vue'
 import TestimonialsSection from '@/components/functional/TestimonialsSection.vue'
+import { useLenis } from '@/composables/useLenis'
+
+// Ativa smooth scroll com efeito de inércia apenas nesta página
+useLenis({
+  lerp: 0.08,        // Mais suave/pesado (padrão 0.1)
+  duration: 1.4,     // Duração da animação
+  smoothWheel: true,
+  smoothTouch: false // Desativa em mobile para melhor UX
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-white">
-    <!-- Header -->
-    <AppHeader />
+  <div>
+    <!-- Hero Section -->
+    <HeroSection />
 
-    <!-- Main Content -->
-    <main>
-      <!-- Hero Section -->
-      <HeroSection />
+    <!-- Benefits Section -->
+    <BenefitsSection />
 
-      <!-- Benefits Section -->
-      <BenefitsSection />
+    <!-- Products Section -->
+    <ProductsSection />
 
-      <!-- Products Section -->
-      <ProductsSection />
-
-      <!-- Testimonials Section -->
-      <TestimonialsSection />
-    </main>
-
-    <!-- Footer (placeholder para expansão futura) -->
-    <footer class="py-8 border-t border-gray-100">
-      <div class="max-w-[1216px] mx-auto px-4 md:px-6 lg:px-8">
-        <p class="text-sm text-gray-400 text-center">
-          © 2026 Afiliado ML. Todos os direitos reservados.
-        </p>
-      </div>
-    </footer>
+    <!-- Testimonials Section -->
+    <TestimonialsSection />
   </div>
 </template>

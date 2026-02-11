@@ -1,44 +1,30 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import BaseContainer from '@/components/ui/BaseContainer.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ProductCard from '@/components/functional/ProductCard.vue'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-vue-next'
+import { useProducts, useProductCarousel } from '@/composables/useProducts'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Produtos de exemplo - em produção viriam de uma API
-const products = ref([
-  { id: 1, name: 'Product name', price: 69, variant: 'Variant', image: null },
-  { id: 2, name: 'Product name', price: 69, variant: 'Variant', image: null },
-  { id: 3, name: 'Product name', price: 69, variant: 'Variant', image: null },
-  { id: 4, name: 'Product name', price: 69, variant: 'Variant', image: null },
-  { id: 5, name: 'Product name', price: 69, variant: 'Variant', image: null }
-])
-
-const scrollContainer = ref(null)
-
-const scrollLeft = () => {
-  if (scrollContainer.value) {
-    scrollContainer.value.scrollBy({ left: -280, behavior: 'smooth' })
-  }
-}
-
-const scrollRight = () => {
-  if (scrollContainer.value) {
-    scrollContainer.value.scrollBy({ left: 280, behavior: 'smooth' })
-  }
-}
+const { products } = useProducts()
+const { scrollContainer, scrollLeft, scrollRight } = useProductCarousel()
 
 onMounted(() => {
+  gsap.set('.product-card-wrapper', { autoAlpha: 1, x: 0, filter: 'blur(0px)' })
+
   gsap.from('.product-card-wrapper', {
     scrollTrigger: {
       trigger: '.products-section',
-      start: 'top 75%',
+      start: 'top 80%',
+      once: true
     },
-    x: 50,
-    opacity: 0,
+    x: 60,
+    autoAlpha: 0,
+    filter: 'blur(8px)',
     duration: 1,
     stagger: 0.1,
     ease: 'power3.out'
@@ -47,47 +33,68 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="products-section py-12 md:py-16">
-    <BaseContainer>
+  <section class="products-section relative py-20 md:py-28 bg-gray-50/50 overflow-hidden">
+    <!-- Subtle Background -->
+    <div class="absolute -top-1/3 -left-1/4 w-1/2 h-1/2 rounded-full bg-blue-50/30 blur-3xl pointer-events-none">
+    </div>
+
+    <BaseContainer class="relative z-10">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div>
-          <h2 class="text-xl md:text-2xl font-bold text-gray-950 uppercase tracking-wide">
-            Products
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mb-4">
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Featured</span>
+          </span>
+          <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-950 tracking-tight">
+            Trending Products
           </h2>
-          <p class="text-sm text-gray-400 mt-1">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          <p class="text-base text-gray-500 mt-2 max-w-md">
+            Discover our most popular items loved by thousands of customers.
           </p>
         </div>
-        <BaseButton variant="primary" size="sm">
-          View All
+
+        <BaseButton variant="secondary" size="md"
+          class="shrink-0 border-gray-200 text-gray-950 hover:bg-gray-100 group">
+          View All Products
+          <ArrowRight class="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
         </BaseButton>
       </div>
 
-      <!-- Products Grid/Carousel -->
+      <!-- Products Carousel -->
       <div class="relative">
-        <div ref="scrollContainer" class="flex gap-4 overflow-x-auto p-4 snap-x snap-mandatory scrollbar-hide">
+        <!-- Navigation Arrows - Desktop -->
+        <button
+          class="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center bg-white rounded-full shadow-lg border border-gray-100 text-gray-700 hover:bg-gray-950 hover:text-white hover:border-gray-950 transition-all duration-300"
+          aria-label="Anterior" @click="scrollLeft">
+          <ChevronLeft class="w-5 h-5" />
+        </button>
+
+        <button
+          class="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center bg-white rounded-full shadow-lg border border-gray-100 text-gray-700 hover:bg-gray-950 hover:text-white hover:border-gray-950 transition-all duration-300"
+          aria-label="Próximo" @click="scrollRight">
+          <ChevronRight class="w-5 h-5" />
+        </button>
+
+        <!-- Cards Container -->
+        <div ref="scrollContainer"
+          class="flex gap-5 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
           <div v-for="product in products" :key="product.id"
-            class="product-card-wrapper shrink-0 w-50 md:w-55 snap-start">
+            class="product-card-wrapper shrink-0 w-64 md:w-72 snap-start">
             <ProductCard :product="product" />
           </div>
         </div>
 
-        <!-- Navigation Arrows -->
-        <div class="flex items-center gap-2 mt-6">
+        <!-- Navigation Arrows - Mobile -->
+        <div class="flex lg:hidden items-center justify-center gap-3 mt-4">
           <button
-            class="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-full text-gray-800 hover:bg-gray-50 transition-colors"
+            class="w-11 h-11 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-700 hover:bg-gray-950 hover:text-white hover:border-gray-950 transition-all duration-300"
             aria-label="Anterior" @click="scrollLeft">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft class="w-5 h-5" />
           </button>
           <button
-            class="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-full text-gray-800 hover:bg-gray-50 transition-colors"
+            class="w-11 h-11 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-700 hover:bg-gray-950 hover:text-white hover:border-gray-950 transition-all duration-300"
             aria-label="Próximo" @click="scrollRight">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRight class="w-5 h-5" />
           </button>
         </div>
       </div>
