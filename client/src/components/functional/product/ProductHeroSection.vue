@@ -6,12 +6,16 @@ import BaseContainer from '@/components/ui/BaseContainer.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import {
   Star,
+  StarHalf,
   ExternalLink,
   BadgeCheck,
   ShoppingCart,
   Lock,
   CreditCard
 } from 'lucide-vue-next'
+import { useStarRating } from '@/composables/useStarRating'
+
+const { getStarDistribution } = useStarRating()
 
 // Props
 const props = defineProps({
@@ -83,11 +87,8 @@ const formatPrice = (price) => {
   return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-// Generate star rating
-const getStarRating = (rating) => {
-  const fullStars = Math.floor(rating || 0)
-  return fullStars
-}
+// Star rating calculado via composable (preparado para dados da API)
+const starDistribution = computed(() => getStarDistribution(props.product?.rate))
 </script>
 
 <template>
@@ -148,8 +149,12 @@ const getStarRating = (rating) => {
           <div class="flex items-center gap-3 mb-6 flex-wrap">
             <div class="flex items-center gap-1">
               <div class="flex text-yellow-400">
-                <Star v-for="i in getStarRating(product.rate)" :key="i" class="w-4 h-4 fill-current" />
-                <Star v-for="i in (5 - getStarRating(product.rate))" :key="'empty-' + i"
+                <!-- Estrelas cheias -->
+                <Star v-for="i in starDistribution.fullStars" :key="'full-' + i" class="w-4 h-4 fill-current" />
+                <!-- Meia-estrela -->
+                <StarHalf v-if="starDistribution.hasHalfStar" class="w-4 h-4 fill-current" />
+                <!-- Estrelas vazias -->
+                <Star v-for="i in starDistribution.emptyStars" :key="'empty-' + i"
                   class="w-4 h-4 text-gray-200" />
               </div>
               <span class="text-sm font-bold text-gray-950 ml-1">{{ product.rate }}</span>
