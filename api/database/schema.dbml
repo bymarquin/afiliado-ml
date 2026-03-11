@@ -1,0 +1,80 @@
+// Schema do Banco de Dados - Afiliado ML
+// Projeto: Sistema de gerenciamento de produtos afiliados do Mercado Livre
+
+Table usuarios {
+  id integer [primary key, increment]
+  nome varchar [not null]
+  email varchar [unique, not null]
+  senha_hash varchar [not null]
+  ativo boolean [default: true]
+  created_at timestamp [default: `now()`]
+  atualizado_em timestamp [default: `now()`]
+}
+
+Table produtos {
+  id integer [primary key, increment]
+  mlb_id varchar [unique, not null, note: 'ID do produto no Mercado Livre (ex: MLB123456)']
+  titulo varchar [not null]
+  descricao text
+  preco decimal [not null]
+  preco_original decimal [note: 'Preço original (antes do desconto)']
+  imagem_url varchar
+  url_produto varchar [not null, note: 'URL original do produto']
+  url_afiliado varchar [note: 'URL de afiliado para redirecionamento']
+  avaliacao decimal [note: 'Avaliação média (0-5)']
+  avaliacao_qtd integer [note: 'Quantidade de avaliações']
+  status varchar [default: 'ativo', note: 'ativo, inativo, sem_estoque']
+  destaque boolean [default: false, note: 'Destaque na homepage']
+  created_at timestamp [default: `now()`]
+  atualizado_em timestamp [default: `now()`]
+}
+
+Table categorias {
+  id integer [primary key, increment]
+  nome varchar [unique, not null]
+  slug varchar [unique, not null]
+  categoria_pai_id integer [ref: > categorias.id, note: 'Subcategorias']
+  ativo boolean [default: true]
+  created_at timestamp [default: `now()`]
+  atualizado_em timestamp [default: `now()`]
+}
+
+Table produto_categorias {
+  id integer [primary key, increment]
+  produto_id integer [ref: > produtos.id]
+  categoria_id integer [ref: > categorias.id]
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    (produto_id, categoria_id) [unique]
+  }
+}
+
+Table configuracoes {
+  id integer [primary key, increment]
+  chave varchar [unique, not null]
+  valor text [not null]
+  tipo varchar [default: 'string', note: 'string, number, boolean, json']
+  descricao text
+  atualizado_em timestamp [default: `now()`]
+}
+
+// Relacionamentos
+Ref: produtos.mlb_id > scrapings.produto_id [note: 'Produtos podem ter múltiplos scrapings']
+
+// Índices para performance
+Table produtos {
+  indexes {
+    mlb_id [name: 'idx_produtos_mlb_id']
+    status [name: 'idx_produtos_status']
+    destaque [name: 'idx_produtos_destaque']
+    created_at [name: 'idx_produtos_created_at']
+  }
+}
+
+Table categorias {
+  indexes {
+    slug [name: 'idx_categorias_slug']
+    categoria_pai_id [name: 'idx_categorias_pai']
+  }
+}

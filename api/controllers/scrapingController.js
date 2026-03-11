@@ -1,5 +1,17 @@
 import { scrapeProduct as scrapeProductService } from "../services/scraping.js";
 
+function parseScrapingResult(scrapeResult) {
+  if (typeof scrapeResult !== "string") {
+    return scrapeResult;
+  }
+
+  try {
+    return JSON.parse(scrapeResult);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Controller para gerenciar requisições de scraping
  */
@@ -22,18 +34,25 @@ export async function scrapeProductController(req, res) {
   }
 
   // Valida o formato da URL
-  if (!isValidUrl(url)) {
+  if (!isValidUrl(url) || !isMercadoLivreUrl(url)) {
     return res.status(400).json({
       success: false,
       error: "URL inválida",
-      message: "A URL fornecida não é válida",
+      message: "A URL deve ser válida e pertencer ao Mercado Livre",
     });
   }
 
   try {
     const productData = await scrapeProductService(url);
-    const parsedData =
-      typeof productData === "string" ? JSON.parse(productData) : productData;
+    const parsedData = parseScrapingResult(productData);
+
+    if (!Array.isArray(parsedData)) {
+      return res.status(502).json({
+        success: false,
+        error: "Erro ao processar dados de scraping",
+      });
+    }
+
     res.json({
       success: true,
       data: parsedData,
@@ -43,7 +62,6 @@ export async function scrapeProductController(req, res) {
     res.status(500).json({
       success: false,
       error: "Erro ao acessar o link",
-      message: error.message,
     });
   }
 }
@@ -57,6 +75,15 @@ function isValidUrl(url) {
   try {
     new URL(url);
     return true;
+  } catch {
+    return false;
+  }
+}
+
+function isMercadoLivreUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    return /mercadolivre\.com(\.br)?$/.test(parsedUrl.hostname);
   } catch {
     return false;
   }
