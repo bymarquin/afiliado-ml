@@ -12,6 +12,12 @@ const router = createRouter({
       path: '/product/:id',
       name: 'ProductDetails',
       component: () => import('../views/ProductDetailsView.vue'),
+    },
+    {
+      path: '/admin',
+      name: 'AdminScreen',
+      component: () => import('../views/AdminScreenView.vue'),
+      meta: { hideLayout: true },
     }
   ]
 })

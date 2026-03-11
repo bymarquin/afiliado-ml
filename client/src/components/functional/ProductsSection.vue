@@ -33,7 +33,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="products-section relative py-20 md:py-28 bg-gray-50/50 overflow-hidden">
+  <section id="products" class="products-section relative py-20 md:py-28 bg-gray-50/50 overflow-hidden">
     <!-- Subtle Background -->
     <div class="absolute -top-1/3 -left-1/4 w-1/2 h-1/2 rounded-full bg-blue-50/30 blur-3xl pointer-events-none">
     </div>

@@ -25,22 +25,22 @@ const product = ref({
   // Descrição
   description: 'Tamanho da memória: 1 GB. | Interface PCI-Express 2.0. | Memória gráfica DDR3 de 600MHz.',
 
-  // Reviews de usuários (sem dados de autor - anônimo)
+  // Reviews de usuários - campo 'rate' será enviado pelo back-end
   reviews: [
     {
       id: 1,
       text: 'Não compre pensando que vai jogar GTA 6 rsrs, essa placa é para quem não tem vídeo na placa mãe e precisa de uma solução barata. Cumpre o prometido!',
-      rating: 4
+      rate: 4
     },
     {
       id: 2,
       text: 'A placa é ótima, serve bem a sua função. Quanto a instalação, se você tiver uma placa mais antiga, pode precisar de adaptador. Excelente custo-benefício!',
-      rating: 5
+      rate: 5
     },
     {
       id: 3,
       text: 'Placa boa, mas não é compatível com Windows 11. Deveria estar especificado na descrição. Tirando isso, funciona muito bem!',
-      rating: 3
+      rate: 3.5
     }
   ]
 })

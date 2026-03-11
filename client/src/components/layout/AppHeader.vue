@@ -1,10 +1,33 @@
 <script setup>
 import BaseContainer from '@/components/ui/BaseContainer.vue'
-import { useNavigation } from '@/composables/useNavigation'
+import { useNavigation, SECTION_IDS } from '@/composables/useNavigation'
 import { useMobileMenu } from '@/composables/useMobileMenu'
+import { useActiveSection } from '@/composables/useActiveSection'
 
 const { navLinks } = useNavigation()
-const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu()
+const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu, close: closeMobileMenu } = useMobileMenu()
+const { activeSection } = useActiveSection(SECTION_IDS)
+
+/**
+ * Scroll suave até a seção usando Lenis (se disponível) ou fallback nativo.
+ * Fecha o menu mobile automaticamente após o clique.
+ */
+const scrollToSection = (event, sectionId) => {
+    event.preventDefault()
+
+    const el = document.getElementById(sectionId)
+    if (!el) return
+
+    // Tenta usar a instância global do Lenis (criada no HomePageView)
+    const lenisInstance = window.__lenis
+    if (lenisInstance) {
+        lenisInstance.scrollTo(el, { offset: -64, duration: 1.2 })
+    } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    closeMobileMenu()
+}
 </script>
 
 <template>
@@ -22,10 +45,14 @@ const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu()
 
                 <!-- Desktop Navigation -->
                 <ul class="hidden md:flex items-center gap-8">
-                    <li v-for="link in navLinks" :key="link.label">
-                        <a :href="link.href"
-                            class="text-sm font-medium text-gray-800 hover:text-gray-950 transition-colors">
+                    <li v-for="link in navLinks" :key="link.sectionId">
+                        <a :href="link.href" @click="scrollToSection($event, link.sectionId)" class="nav-link text-sm font-medium transition-colors relative" :class="activeSection === link.sectionId
+                            ? 'text-blue-600'
+                            : 'text-gray-800 hover:text-gray-950'
+                            ">
                             {{ link.label }}
+                            <!-- Underline animado -->
+                            <span class="absolute -bottom-1 left-0 h-0.5 bg-blue-600 rounded-full transition-all duration-300" :class="activeSection === link.sectionId ? 'w-full' : 'w-0'"></span>
                         </a>
                     </li>
                 </ul>
@@ -76,9 +103,13 @@ const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu } = useMobileMenu()
                 leave-to-class="opacity-0 -translate-y-2">
                 <div v-if="isMobileMenuOpen" class="md:hidden pb-4">
                     <ul class="flex flex-col gap-2">
-                        <li v-for="link in navLinks" :key="link.label">
-                            <a :href="link.href"
-                                class="block py-2 px-3 text-sm font-medium text-gray-800 hover:text-gray-950 hover:bg-gray-50 rounded-lg transition-colors">
+                        <li v-for="link in navLinks" :key="link.sectionId">
+                            <a :href="link.href" @click="scrollToSection($event, link.sectionId)"
+                                class="block py-2 px-3 text-sm font-medium rounded-lg transition-colors"
+                                :class="activeSection === link.sectionId
+                                    ? 'text-blue-600 bg-blue-50'
+                                    : 'text-gray-800 hover:text-gray-950 hover:bg-gray-50'
+                                ">
                                 {{ link.label }}
                             </a>
                         </li>

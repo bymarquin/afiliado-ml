@@ -91,11 +91,15 @@ export function useLenis(options = {}) {
             touchMultiplier
         })
 
+        // Expõe globalmente para acesso pelo scroll de navegação (AppHeader)
+        window.__lenis = lenis.value
+
         // Inicia o loop de animação
         rafId = requestAnimationFrame(raf)
     })
 
     onUnmounted(() => {
+        window.__lenis = null
         destroy()
     })
 
