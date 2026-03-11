@@ -8,6 +8,24 @@ const currentYear = new Date().getFullYear()
 
 const { navLinks, supportLinks } = useNavigation()
 const { socialLinks } = useSocialLinks()
+
+/**
+ * Scroll suave até a seção (reutiliza Lenis global se disponível)
+ */
+const scrollToSection = (event, sectionId) => {
+    if (!sectionId) return
+
+    event.preventDefault()
+    const el = document.getElementById(sectionId)
+    if (!el) return
+
+    const lenisInstance = window.__lenis
+    if (lenisInstance) {
+        lenisInstance.scrollTo(el, { offset: -64, duration: 1.2 })
+    } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+}
 </script>
 
 <template>
@@ -57,8 +75,8 @@ const { socialLinks } = useSocialLinks()
               Navigation
             </h4>
             <ul class="space-y-3">
-              <li v-for="link in navLinks" :key="link.label">
-                <a :href="link.href"
+              <li v-for="link in navLinks" :key="link.sectionId">
+                <a :href="link.href" @click="scrollToSection($event, link.sectionId)"
                   class="text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1 group">
                   <span class="w-0 h-px bg-blue-500 transition-all group-hover:w-4"></span>
                   {{ link.label }}

@@ -73,7 +73,7 @@ const handleImageError = (e) => {
 </script>
 
 <template>
-  <section ref="heroContainer" class="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-2 pb-8">
+  <section id="hero" ref="heroContainer" class="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-2 pb-8">
     <!-- Subtle Background Gradient/Blob -->
     <div class="absolute -top-1/5 -left-1/10 w-3/5 h-3/5 rounded-full bg-primary/5 blur-3xl pointer-events-none">
     </div>
