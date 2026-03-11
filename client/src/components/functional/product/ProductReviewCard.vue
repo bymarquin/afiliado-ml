@@ -1,5 +1,9 @@
 <script setup>
-import { Star, Quote } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { Star, StarHalf, Quote } from 'lucide-vue-next'
+import { useStarRating } from '@/composables/useStarRating'
+
+const { getStarDistribution } = useStarRating()
 
 const props = defineProps({
     review: {
@@ -8,8 +12,8 @@ const props = defineProps({
     }
 })
 
-// Rating padrão se não vier da API
-const rating = props.review.rating || 5
+// Star rating calculado via composable (preparado para dados da API)
+const starDistribution = computed(() => getStarDistribution(props.review?.rate))
 </script>
 
 <template>
@@ -24,9 +28,18 @@ const rating = props.review.rating || 5
 
         <!-- Rating Stars with Micro Animations -->
         <div class="flex gap-0.5 mb-4">
-            <Star v-for="i in 5" :key="i" class="star-icon w-4 h-4 text-amber-400"
-                :class="i <= rating ? 'fill-current' : 'fill-none opacity-30'"
+            <!-- Estrelas cheias -->
+            <Star v-for="i in starDistribution.fullStars" :key="'full-' + i"
+                class="star-icon w-4 h-4 text-amber-400 fill-current"
                 :style="{ '--delay': `${(i - 1) * 80}ms` }" />
+            <!-- Meia-estrela -->
+            <StarHalf v-if="starDistribution.hasHalfStar"
+                class="star-icon w-4 h-4 text-amber-400 fill-current"
+                :style="{ '--delay': `${starDistribution.fullStars * 80}ms` }" />
+            <!-- Estrelas vazias -->
+            <Star v-for="i in starDistribution.emptyStars" :key="'empty-' + i"
+                class="star-icon w-4 h-4 text-amber-400 fill-none opacity-30"
+                :style="{ '--delay': `${(starDistribution.fullStars + (starDistribution.hasHalfStar ? 1 : 0) + i - 1) * 80}ms` }" />
         </div>
 
         <!-- Quote Text -->
