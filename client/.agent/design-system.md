@@ -529,6 +529,44 @@ body {
 
 ---
 
+## Admin Pages Pattern
+
+### Estrutura Base
+
+- Use `AdminLayout` para todas as abas internas do Admin.
+- `title` e `mobileTitle` devem ser passados via props.
+- `title-icon` e `header-actions` devem ser passados por slot.
+- Conteúdo da aba deve ser renderizado no slot default.
+
+```vue
+<AdminLayout title="Título da Aba" mobileTitle="Painel Admin">
+  <template #title-icon>
+    <Icon class="w-7 h-7 text-gray-950" />
+  </template>
+
+  <template #header-actions>
+    <BaseButton variant="primary" size="sm">Ação</BaseButton>
+  </template>
+
+  <!-- Conteúdo da aba -->
+</AdminLayout>
+```
+
+### Regras Visuais Admin
+
+- Background do shell: `bg-gray-50`
+- Card principal: `bg-white rounded-2xl border border-gray-100 shadow-sm`
+- Header da aba: `text-2xl md:text-3xl font-semibold text-gray-950`
+- Ações principais: usar `BaseButton` (evitar botão hardcoded)
+- Sidebar itens: `rounded-xl`, `duration-300`, foco visível e `group-hover` funcional
+
+### Responsividade (obrigatório para cada nova aba)
+
+- Mobile (`<640px`): 1 coluna, sem overflow horizontal.
+- Tablet (`>=768px`): ajustes de padding e grids com 2 colunas quando aplicável.
+- Desktop (`>=1024px`): sidebar fixa + conteúdo com `lg:ml-64`.
+- Pontos de verificação mínimos: `375px`, `768px`, `1440px`.
+
 ## 🎯 Checklist de Design
 
 Antes de finalizar um componente, verifique:
