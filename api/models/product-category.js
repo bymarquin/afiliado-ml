@@ -1,16 +1,16 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   class ProdutoCategoria extends Model {
     static associate(models) {
       ProdutoCategoria.belongsTo(models.Produto, {
-        foreignKey: 'produto_id',
-        as: 'produto',
+        foreignKey: 'product_id',
+        as: 'product',
       });
 
       ProdutoCategoria.belongsTo(models.Categoria, {
-        foreignKey: 'categoria_id',
-        as: 'categoria',
+        foreignKey: 'category_id',
+        as: 'category',
       });
     }
   }
@@ -23,7 +23,7 @@ export default (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false,
       },
-      produto_id: {
+      product_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -31,7 +31,7 @@ export default (sequelize, DataTypes) => {
           key: 'id',
         },
       },
-      categoria_id: {
+      category_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -46,9 +46,7 @@ export default (sequelize, DataTypes) => {
       tableName: 'produto_categorias',
       timestamps: true,
       underscored: true,
-      indexes: [
-        { fields: ['produto_id', 'categoria_id'], unique: true },
-      ],
+      indexes: [{ fields: ['product_id', 'category_id'], unique: true }],
     }
   );
 

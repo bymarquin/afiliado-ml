@@ -4,8 +4,8 @@ import { scrapeProductController } from "../controllers/scrapingController.js";
 const router = express.Router();
 
 /**
- * GET /api/scrape
- * Realiza o scraping de um produto
+ * @route GET /api/scrape
+ * @description Realiza o scraping de um produto
  * Query params:
  *   - url (required): URL do produto a fazer scraping
  *
@@ -13,6 +13,6 @@ const router = express.Router();
  *   GET /api/scrape?url=https://www.mercadolivre.com.br/...
  *   ?url={link do mercado livre}
  */
-router.get("/scrape", scrapeProductController);
+router.get("/", scrapeProductController);
 
 export default router;

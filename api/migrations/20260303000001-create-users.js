@@ -7,7 +7,7 @@ export const up = async (queryInterface, Sequelize) => {
       autoIncrement: true,
       allowNull: false,
     },
-    nome: {
+    name: {
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -16,13 +16,18 @@ export const up = async (queryInterface, Sequelize) => {
       allowNull: false,
       unique: true,
     },
-    senha_hash: {
+    password_hash: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    ativo: {
+    is_active: {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
+    },
+    is_admin: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     created_at: {
       type: Sequelize.DATE,

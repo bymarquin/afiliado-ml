@@ -1,4 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   class Usuario extends Model {
@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false,
       },
-      nome: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -27,13 +27,18 @@ export default (sequelize, DataTypes) => {
           isEmail: true,
         },
       },
-      senha_hash: {
+      password_hash: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      ativo: {
+      is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      is_admin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
     },
     {

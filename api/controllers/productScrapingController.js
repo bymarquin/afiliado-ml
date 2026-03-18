@@ -14,20 +14,14 @@ function parseScrapingResult(scrapeResult) {
 }
 
 /**
- * Controller para gerenciar scraping e criação de produtos
- */
-
-/**
- * POST /api/produtos/scraping
- * Faz scraping de um produto do Mercado Livre e cria no banco
- * @param {Object} req - Objeto da requisição Express
- * @param {Object} res - Objeto da resposta Express
+ * @route POST /api/produtos/scraping
+ * @description Faz scraping de um produto do Mercado Livre e cria no banco
  */
 export async function scrapeAndCreateProduto(req, res) {
   try {
-    const { url, url_afiliado } = req.body;
+    const { url } = req.body;
+    const affiliateUrl = req.body.affiliate_url ?? req.body.url_afiliado;
 
-    // Valida se a URL foi fornecida
     if (!url) {
       return res.status(400).json({
         success: false,
@@ -36,7 +30,6 @@ export async function scrapeAndCreateProduto(req, res) {
       });
     }
 
-    // Valida o formato da URL
     if (!isValidUrl(url) || !isMercadoLivreUrl(url)) {
       return res.status(400).json({
         success: false,
@@ -45,9 +38,8 @@ export async function scrapeAndCreateProduto(req, res) {
       });
     }
 
-    // Extrai o ID do produto da URL
-    const mlb_id = extractMlbId(url);
-    if (!mlb_id) {
+    const meliId = extractMlbId(url);
+    if (!meliId) {
       return res.status(400).json({
         success: false,
         error: 'URL inválida',
@@ -55,8 +47,7 @@ export async function scrapeAndCreateProduto(req, res) {
       });
     }
 
-    // Verifica se o produto já existe
-    const existingProduto = await Produto.findOne({ where: { mlb_id } });
+    const existingProduto = await Produto.findOne({ where: { meli_id: meliId } });
     if (existingProduto) {
       return res.status(409).json({
         success: false,
@@ -66,7 +57,6 @@ export async function scrapeAndCreateProduto(req, res) {
       });
     }
 
-    // Faz o scraping do produto
     const productData = await scrapeProductService(url);
     const parsedData = parseScrapingResult(productData);
 
@@ -87,20 +77,19 @@ export async function scrapeAndCreateProduto(req, res) {
       });
     }
 
-    // Cria o produto no banco
     const novoProduto = await Produto.create({
-      mlb_id: mlb_id,
-      titulo: produto.title,
-      descricao: produto.description || null,
-      preco: produto.price,
-      preco_original: produto.original_price || null,
-      imagem_url: produto.image || null,
-      url_produto: produto.url,
-      url_afiliado: url_afiliado || url,
-      avaliacao: produto.rate || null,
-      avaliacao_qtd: produto.rateCount || null,
-      status: 'ativo',
-      destaque: false,
+      meli_id: meliId,
+      title: produto.title,
+      description: produto.description || null,
+      price: produto.price,
+      original_price: produto.original_price || null,
+      image_url: produto.image || null,
+      product_url: produto.url,
+      affiliate_url: affiliateUrl || url,
+      rating: produto.rate || null,
+      rating_count: produto.rateCount || null,
+      status: 'active',
+      featured: false,
     });
 
     res.status(201).json({
@@ -118,8 +107,8 @@ export async function scrapeAndCreateProduto(req, res) {
 }
 
 /**
- * GET /api/produtos/scraping?url=...
- * Apenas faz o scraping e retorna os dados (sem salvar)
+ * @route GET /api/produtos/scraping
+ * @description Apenas faz o scraping e retorna os dados (sem salvar)
  */
 export async function scrapeProduto(req, res) {
   try {
@@ -164,11 +153,6 @@ export async function scrapeProduto(req, res) {
   }
 }
 
-/**
- * Valida se uma string é uma URL válida
- * @param {string} url - URL a validar
- * @returns {boolean} True se válida, false caso contrário
- */
 function isValidUrl(url) {
   try {
     new URL(url);
@@ -187,11 +171,6 @@ function isMercadoLivreUrl(url) {
   }
 }
 
-/**
- * Extrai o ID do produto (MLB...) da URL
- * @param {string} url - URL do produto
- * @returns {string|null} ID do produto ou null
- */
 function extractMlbId(url) {
   const match = url.match(/MLB[\w\d]+/);
   return match ? match[0] : null;

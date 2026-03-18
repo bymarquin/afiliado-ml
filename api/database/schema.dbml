@@ -20,7 +20,7 @@ Table produtos {
   preco_original decimal [note: 'Preço original (antes do desconto)']
   imagem_url varchar
   url_produto varchar [not null, note: 'URL original do produto']
-  url_afiliado varchar [note: 'URL de afiliado para redirecionamento']
+  affiliate_url varchar [note: 'Affiliate URL for redirect']
   avaliacao decimal [note: 'Avaliação média (0-5)']
   avaliacao_qtd integer [note: 'Quantidade de avaliações']
   status varchar [default: 'ativo', note: 'ativo, inativo, sem_estoque']

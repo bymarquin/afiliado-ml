@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const ALLOWED_ORDER_FIELDS = ['id', 'nome', 'email', 'created_at', 'updated_at'];
+const ALLOWED_ORDER_FIELDS = ['id', 'name', 'email', 'is_admin', 'created_at', 'updated_at'];
 
 function parsePositiveInt(value, fallback) {
   const parsed = Number.parseInt(value, 10);
@@ -16,19 +16,24 @@ function normalizeSort(order, direction) {
   return { orderField, orderDirection };
 }
 
-/**
- * Controller para gerenciar Usuários
- */
+function parseBooleanQuery(value) {
+  if (value === undefined) return undefined;
+  if (typeof value === 'boolean') return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+}
 
 /**
- * GET /api/usuarios
- * Lista todos os usuários com paginação
+ * @route GET /api/usuarios
+ * @description Lista todos os usuários com paginação
  */
 export async function listUsuarios(req, res) {
   try {
     const {
       page = 1,
       limit = 20,
+      is_active,
       ativo,
       search,
       order = 'created_at',
@@ -41,13 +46,14 @@ export async function listUsuarios(req, res) {
     const { orderField, orderDirection } = normalizeSort(order, direction);
     const where = {};
 
-    if (ativo !== undefined) {
-      where.ativo = ativo === 'true';
+    const activeFilter = parseBooleanQuery(is_active ?? ativo);
+    if (activeFilter !== undefined) {
+      where.is_active = activeFilter;
     }
 
     if (search) {
       where[Sequelize.Op.or] = [
-        { nome: { [Sequelize.Op.iLike]: `%${search}%` } },
+        { name: { [Sequelize.Op.iLike]: `%${search}%` } },
         { email: { [Sequelize.Op.iLike]: `%${search}%` } },
       ];
     }
@@ -57,7 +63,7 @@ export async function listUsuarios(req, res) {
       limit: limitNumber,
       offset,
       order: [[orderField, orderDirection]],
-      attributes: { exclude: ['senha_hash'] },
+      attributes: { exclude: ['password_hash'] },
     });
 
     res.json({
@@ -80,15 +86,16 @@ export async function listUsuarios(req, res) {
 }
 
 /**
- * GET /api/usuarios/:id
- * Obtém um usuário específico
+ * @route GET /api/usuarios/:id
+ * @description Obtém um usuário específico
+ * @param {number} id - ID do usuário
  */
 export async function getUsuario(req, res) {
   try {
     const { id } = req.params;
 
     const usuario = await Usuario.findByPk(id, {
-      attributes: { exclude: ['senha_hash'] },
+      attributes: { exclude: ['password_hash'] },
     });
 
     if (!usuario) {
@@ -112,23 +119,27 @@ export async function getUsuario(req, res) {
 }
 
 /**
- * POST /api/usuarios
- * Cria um novo usuário
+ * @route POST /api/usuarios
+ * @description Cria um novo usuário
  */
 export async function createUsuario(req, res) {
   try {
-    const { nome, email, senha, ativo = true } = req.body;
+    const name = req.body.name ?? req.body.nome;
+    const email = req.body.email;
+    const password = req.body.password ?? req.body.senha;
+    const isActive = req.body.is_active ?? req.body.ativo ?? true;
+    const usersCount = await Usuario.count();
+    const isFirstUserBootstrap = usersCount === 0;
+    const isAdmin = isFirstUserBootstrap ? true : (req.body.is_admin ?? req.body.isAdmin ?? false);
 
-    // Validações
-    if (!nome || !email || !senha) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
         error: 'Campos obrigatórios faltando',
-        message: 'nome, email e senha são obrigatórios',
+        message: 'name, email e password são obrigatórios',
       });
     }
 
-    // Verifica se já existe usuário com este email
     const existingUsuario = await Usuario.findOne({ where: { email } });
     if (existingUsuario) {
       return res.status(409).json({
@@ -138,23 +149,24 @@ export async function createUsuario(req, res) {
       });
     }
 
-    // Hash da senha
-    const senha_hash = await bcrypt.hash(senha, 10);
+    const password_hash = await bcrypt.hash(password, 10);
 
     const usuario = await Usuario.create({
-      nome,
+      name,
       email,
-      senha_hash,
-      ativo,
+      password_hash,
+      is_active: isActive,
+      is_admin: isAdmin,
     });
 
     res.status(201).json({
       success: true,
       data: {
         id: usuario.id,
-        nome: usuario.nome,
+        name: usuario.name,
         email: usuario.email,
-        ativo: usuario.ativo,
+        is_active: usuario.is_active,
+        is_admin: usuario.is_admin,
         created_at: usuario.created_at,
       },
     });
@@ -168,13 +180,18 @@ export async function createUsuario(req, res) {
 }
 
 /**
- * PUT /api/usuarios/:id
- * Atualiza um usuário existente
+ * @route PUT /api/usuarios/:id
+ * @description Atualiza um usuário existente
+ * @param {number} id - ID do usuário
  */
 export async function updateUsuario(req, res) {
   try {
     const { id } = req.params;
-    const { nome, email, senha, ativo } = req.body;
+    const name = req.body.name ?? req.body.nome;
+    const email = req.body.email;
+    const password = req.body.password ?? req.body.senha;
+    const isActive = req.body.is_active ?? req.body.ativo;
+    const isAdmin = req.body.is_admin ?? req.body.isAdmin;
 
     const usuario = await Usuario.findByPk(id);
 
@@ -185,7 +202,6 @@ export async function updateUsuario(req, res) {
       });
     }
 
-    // Verifica se email já existe (exceto o próprio)
     if (email && email !== usuario.email) {
       const existingEmail = await Usuario.findOne({
         where: { email, id: { [Sequelize.Op.ne]: id } },
@@ -200,14 +216,14 @@ export async function updateUsuario(req, res) {
     }
 
     const updateData = {
-      nome: nome ?? usuario.nome,
+      name: name ?? usuario.name,
       email: email ?? usuario.email,
-      ativo: ativo ?? usuario.ativo,
+      is_active: isActive ?? usuario.is_active,
+      is_admin: isAdmin ?? usuario.is_admin,
     };
 
-    // Hash da senha se fornecida
-    if (senha) {
-      updateData.senha_hash = await bcrypt.hash(senha, 10);
+    if (password) {
+      updateData.password_hash = await bcrypt.hash(password, 10);
     }
 
     await usuario.update(updateData);
@@ -216,10 +232,11 @@ export async function updateUsuario(req, res) {
       success: true,
       data: {
         id: usuario.id,
-        nome: usuario.nome,
+        name: usuario.name,
         email: usuario.email,
-        ativo: usuario.ativo,
-        atualizado_em: usuario.atualizado_em,
+        is_active: usuario.is_active,
+        is_admin: usuario.is_admin,
+        updated_at: usuario.updated_at,
       },
     });
   } catch (error) {
@@ -232,8 +249,9 @@ export async function updateUsuario(req, res) {
 }
 
 /**
- * DELETE /api/usuarios/:id
- * Remove um usuário (soft delete - desativa)
+ * @route DELETE /api/usuarios/:id
+ * @description Remove um usuário (soft delete - desativa)
+ * @param {number} id - ID do usuário
  */
 export async function deleteUsuario(req, res) {
   try {
@@ -248,8 +266,7 @@ export async function deleteUsuario(req, res) {
       });
     }
 
-    // Soft delete - apenas desativa
-    await usuario.update({ ativo: false });
+    await usuario.update({ is_active: false });
 
     res.json({
       success: true,
@@ -265,23 +282,22 @@ export async function deleteUsuario(req, res) {
 }
 
 /**
- * POST /api/usuarios/login
- * Realiza login do usuário
+ * @route POST /api/usuarios/login
+ * @description Realiza login do usuário
  */
 export async function loginUsuario(req, res) {
   try {
-    const { email, senha } = req.body;
+    const email = req.body.email;
+    const password = req.body.password ?? req.body.senha;
 
-    // Validações
-    if (!email || !senha) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
         error: 'Campos obrigatórios faltando',
-        message: 'email e senha são obrigatórios',
+        message: 'email e password são obrigatórios',
       });
     }
 
-    // Busca usuário
     const usuario = await Usuario.findOne({ where: { email } });
 
     if (!usuario) {
@@ -292,8 +308,7 @@ export async function loginUsuario(req, res) {
       });
     }
 
-    // Verifica se está ativo
-    if (!usuario.ativo) {
+    if (!usuario.is_active) {
       return res.status(401).json({
         success: false,
         error: 'Usuário inativo',
@@ -301,10 +316,9 @@ export async function loginUsuario(req, res) {
       });
     }
 
-    // Verifica senha
-    const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
+    const passwordValid = await bcrypt.compare(password, usuario.password_hash);
 
-    if (!senhaValida) {
+    if (!passwordValid) {
       return res.status(401).json({
         success: false,
         error: 'Credenciais inválidas',
@@ -320,11 +334,11 @@ export async function loginUsuario(req, res) {
       });
     }
 
-    // Gera token JWT
     const token = jwt.sign(
       {
         id: usuario.id,
         email: usuario.email,
+        is_admin: usuario.is_admin,
       },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
@@ -334,8 +348,9 @@ export async function loginUsuario(req, res) {
       success: true,
       data: {
         id: usuario.id,
-        nome: usuario.nome,
+        name: usuario.name,
         email: usuario.email,
+        is_admin: usuario.is_admin,
         token,
       },
     });
@@ -349,12 +364,11 @@ export async function loginUsuario(req, res) {
 }
 
 /**
- * GET /api/usuarios/me
- * Obtém dados do usuário autenticado
+ * @route GET /api/usuarios/me
+ * @description Obtém dados do usuário autenticado
  */
 export async function getUsuarioMe(req, res) {
   try {
-    // Assume que o middleware de autenticação adicionou o usuário ao request
     if (!req.usuario) {
       return res.status(401).json({
         success: false,
@@ -364,7 +378,7 @@ export async function getUsuarioMe(req, res) {
     }
 
     const usuario = await Usuario.findByPk(req.usuario.id, {
-      attributes: { exclude: ['senha_hash'] },
+      attributes: { exclude: ['password_hash'] },
     });
 
     if (!usuario) {
