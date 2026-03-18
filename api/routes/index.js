@@ -11,10 +11,16 @@ const router = express.Router();
 // Registra todas as rotas da API
 // IMPORTANTE: Rotas específicas devem vir antes das rotas com parâmetros (:id)
 router.use("/scrape", scrapingRoutes);
+router.use("/scraping", scrapingRoutes);
+router.use("/products", produtosScrapingRoutes);
 router.use("/produtos", produtosScrapingRoutes); // vem antes de produtosRoutes
+router.use("/products", produtosRoutes);
 router.use("/produtos", produtosRoutes);
+router.use("/categories", categoriasRoutes);
 router.use("/categorias", categoriasRoutes);
+router.use("/users", usuariosRoutes);
 router.use("/usuarios", usuariosRoutes);
+router.use("/prices", precosRoutes);
 router.use("/precos", precosRoutes);
 
 export default router;

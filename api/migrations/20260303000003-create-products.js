@@ -7,54 +7,59 @@ export const up = async (queryInterface, Sequelize) => {
       autoIncrement: true,
       allowNull: false,
     },
-    mlb_id: {
+    meli_id: {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true,
     },
-    titulo: {
+    title: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    descricao: {
+    description: {
       type: Sequelize.TEXT,
       allowNull: true,
     },
-    preco: {
+    price: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: false,
     },
-    preco_original: {
+    original_price: {
       type: Sequelize.DECIMAL(10, 2),
       allowNull: true,
     },
-    imagem_url: {
+    image_url: {
       type: Sequelize.STRING,
       allowNull: true,
     },
-    url_produto: {
+    product_url: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    url_afiliado: {
+    affiliate_url: {
       type: Sequelize.STRING,
       allowNull: true,
     },
-    avaliacao: {
+    rating: {
       type: Sequelize.DECIMAL(3, 2),
       allowNull: true,
     },
-    avaliacao_qtd: {
+    rating_count: {
       type: Sequelize.INTEGER,
       allowNull: true,
     },
     status: {
       type: Sequelize.STRING,
-      defaultValue: 'ativo',
+      defaultValue: 'active',
     },
-    destaque: {
+    featured: {
       type: Sequelize.BOOLEAN,
       defaultValue: false,
+    },
+    click_count: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
     },
     created_at: {
       type: Sequelize.DATE,
@@ -68,20 +73,24 @@ export const up = async (queryInterface, Sequelize) => {
     },
   });
 
-  await queryInterface.addIndex('produtos', ['mlb_id'], {
-    name: 'idx_produtos_mlb_id',
+  await queryInterface.addIndex('produtos', ['meli_id'], {
+    name: 'idx_produtos_meli_id',
   });
 
   await queryInterface.addIndex('produtos', ['status'], {
     name: 'idx_produtos_status',
   });
 
-  await queryInterface.addIndex('produtos', ['destaque'], {
-    name: 'idx_produtos_destaque',
+  await queryInterface.addIndex('produtos', ['featured'], {
+    name: 'idx_produtos_featured',
   });
 
   await queryInterface.addIndex('produtos', ['created_at'], {
     name: 'idx_produtos_created_at',
+  });
+
+  await queryInterface.addIndex('produtos', ['click_count'], {
+    name: 'idx_produtos_click_count',
   });
 };
 

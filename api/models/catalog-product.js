@@ -1,4 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   class Produto extends Model {
@@ -9,9 +9,9 @@ export default (sequelize, DataTypes) => {
           unique: false,
           timestamps: false,
         },
-        foreignKey: 'produto_id',
-        otherKey: 'categoria_id',
-        as: 'categorias',
+        foreignKey: 'product_id',
+        otherKey: 'category_id',
+        as: 'categories',
       });
     }
   }
@@ -24,57 +24,62 @@ export default (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false,
       },
-      mlb_id: {
+      meli_id: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
       },
-      titulo: {
+      title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      descricao: {
+      description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      preco: {
+      price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
       },
-      preco_original: {
+      original_price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
       },
-      imagem_url: {
+      image_url: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      url_produto: {
+      product_url: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      url_afiliado: {
+      affiliate_url: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      avaliacao: {
+      rating: {
         type: DataTypes.DECIMAL(3, 2),
         allowNull: true,
       },
-      avaliacao_qtd: {
+      rating_count: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
       status: {
         type: DataTypes.STRING,
-        defaultValue: 'ativo',
+        defaultValue: 'active',
         validate: {
-          isIn: [['ativo', 'inativo', 'sem_estoque']],
+          isIn: [['active', 'inactive', 'out_of_stock']],
         },
       },
-      destaque: {
+      featured: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      click_count: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
       },
     },
     {
@@ -84,9 +89,10 @@ export default (sequelize, DataTypes) => {
       timestamps: true,
       underscored: true,
       indexes: [
-        { fields: ['mlb_id'], name: 'idx_produtos_mlb_id' },
+        { fields: ['meli_id'], name: 'idx_produtos_meli_id' },
         { fields: ['status'], name: 'idx_produtos_status' },
-        { fields: ['destaque'], name: 'idx_produtos_destaque' },
+        { fields: ['featured'], name: 'idx_produtos_featured' },
+        { fields: ['click_count'], name: 'idx_produtos_click_count' },
         { fields: ['created_at'], name: 'idx_produtos_created_at' },
       ],
     }

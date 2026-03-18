@@ -52,6 +52,15 @@ async function fetchAndSave(url, original_url) {
   const product_review2 = json.schema[0].review?.[1]?.reviewBody;
   const product_review3 = json.schema[0].review?.[2]?.reviewBody;
 
+  // Extrair marca
+  const product_brand = json.schema[0].brand?.name;
+
+  // Extrair categorias do BreadcrumbList
+  const breadcrumb = json.schema.find((item) => item["@type"] === "BreadcrumbList");
+  const product_categories = breadcrumb?.itemListElement
+    ? breadcrumb.itemListElement.map((item) => item.item.name)
+    : [];
+
   const product = {
     id: product_id,
     title: product_title,
@@ -66,6 +75,8 @@ async function fetchAndSave(url, original_url) {
     review1: product_review1,
     review2: product_review2,
     review3: product_review3,
+    brand: product_brand,
+    categories: product_categories,
   };
   products.push(product);
   const formatted = JSON.stringify(products, null, 2);

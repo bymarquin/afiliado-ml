@@ -15,21 +15,16 @@ function parseScrapingResult(scrapeResult) {
 }
 
 /**
- * Controller para atualização de preços
- */
-
-/**
- * POST /api/precos/atualizar
- * Aciona manualmente a atualização de preços
+ * @route POST /api/precos/atualizar
+ * @description Aciona manualmente a atualização de preços
  */
 export async function atualizarPrecos(req, res) {
   try {
-    const { produto_id } = req.body || {};
+    const productId = req.body?.product_id ?? req.body?.produto_id;
 
-    // Se especificou um produto, atualiza apenas ele
-    if (produto_id) {
-      const produto = await Produto.findByPk(produto_id);
-      
+    if (productId) {
+      const produto = await Produto.findByPk(productId);
+
       if (!produto) {
         return res.status(404).json({
           success: false,
@@ -37,9 +32,9 @@ export async function atualizarPrecos(req, res) {
         });
       }
 
-      console.log(`[Controller] Atualizando produto ${produto.mlb_id}...`);
-      
-      const scrapeResult = await scrapeProduct(produto.url_produto);
+      console.log(`[Controller] Atualizando produto ${produto.meli_id}...`);
+
+      const scrapeResult = await scrapeProduct(produto.product_url);
       const scrapedData = parseScrapingResult(scrapeResult);
 
       if (!Array.isArray(scrapedData)) {
@@ -48,7 +43,7 @@ export async function atualizarPrecos(req, res) {
           error: 'Erro ao processar dados de scraping',
         });
       }
-      
+
       const scrapedProduto = scrapedData[0];
 
       if (!scrapedProduto || scrapedProduto.price === undefined || scrapedProduto.price === null) {
@@ -58,32 +53,30 @@ export async function atualizarPrecos(req, res) {
         });
       }
 
-      const precoAntigo = produto.preco;
-      const precoNovo = scrapedProduto.price;
+      const oldPrice = produto.price;
+      const newPrice = scrapedProduto.price;
 
       await produto.update({
-        preco: precoNovo,
-        preco_original: scrapedProduto.original_price || produto.preco_original,
+        price: newPrice,
+        original_price: scrapedProduto.original_price || produto.original_price,
       });
 
-      const mudou = precoAntigo !== precoNovo;
+      const changed = oldPrice !== newPrice;
 
       return res.json({
         success: true,
-        message: mudou ? 'Preço atualizado' : 'Preço inalterado',
+        message: changed ? 'Preço atualizado' : 'Preço inalterado',
         data: {
-          produto: produto.mlb_id,
-          preco_anterior: precoAntigo,
-          preco_atual: precoNovo,
-          mudou,
+          product: produto.meli_id,
+          previous_price: oldPrice,
+          current_price: newPrice,
+          changed,
         },
       });
     }
 
-    // Se não, aciona o serviço de atualização completa
     console.log('[Controller] Acionando atualização completa de preços...');
-    
-    // Executa uma vez imediatamente
+
     await priceUpdateService.run();
 
     res.json({
@@ -91,7 +84,6 @@ export async function atualizarPrecos(req, res) {
       message: 'Atualização de preços concluída',
       stats: priceUpdateService.stats,
     });
-
   } catch (error) {
     console.error('[Controller] Erro ao atualizar preços:', error.message);
     res.status(500).json({
@@ -102,13 +94,13 @@ export async function atualizarPrecos(req, res) {
 }
 
 /**
- * GET /api/precos/status
- * Retorna o status do serviço de atualização automática
+ * @route GET /api/precos/status
+ * @description Retorna o status do serviço de atualização automática
  */
 export async function statusPrecos(req, res) {
   try {
     const status = priceUpdateService.getStatus();
-    
+
     res.json({
       success: true,
       data: status,

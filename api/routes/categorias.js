@@ -7,15 +7,16 @@ import {
   updateCategoria,
   deleteCategoria,
   getCategoriasArvore,
-} from '../controllers/categoriaController.js';
+} from '../controllers/categoryController.js';
+import { requireAuth, requireAdmin } from '../middlewares/auth.js';
 
 const router = express.Router();
 
 /**
  * @route GET /api/categorias
  * @description Lista todas as categorias
- * @query {boolean} ativo - Filtra por status ativo (padrão: true)
- * @query {number|null} pai - Filtra por categoria pai (null para categorias raiz)
+ * @query {boolean} is_active - Filtra por status ativo (padrão: true)
+ * @query {number|null} parent_category_id - Filtra por categoria pai (null para categorias raiz)
  */
 router.get('/', listCategorias);
 
@@ -24,6 +25,7 @@ router.get('/', listCategorias);
  * @description Retorna a árvore de categorias (categorias raiz com subcategorias)
  */
 router.get('/arvore', getCategoriasArvore);
+router.get('/tree', getCategoriasArvore);
 
 /**
  * @route GET /api/categorias/slug/:slug
@@ -43,12 +45,12 @@ router.get('/:id', getCategoria);
  * @route POST /api/categorias
  * @description Cria uma nova categoria
  * @body {object} body - Dados da categoria
- * @body {string} nome - Nome da categoria (obrigatório)
- * @body {string} slug - Slug da categoria (obrigatório)
- * @body {number} categoria_pai_id - ID da categoria pai (opcional)
- * @body {boolean} ativo - Status ativo (padrão: true)
+ * @body {string} name - Name da categoria (obrigatório)
+ * @body {string} slug - Slug da categoria (opcional, API gera automaticamente quando ausente)
+ * @body {number} parent_category_id - ID da categoria pai (opcional)
+ * @body {boolean} is_active - Status ativo (padrão: true)
  */
-router.post('/', createCategoria);
+router.post('/', requireAuth, requireAdmin, createCategoria);
 
 /**
  * @route PUT /api/categorias/:id
@@ -56,13 +58,13 @@ router.post('/', createCategoria);
  * @param {number} id - ID da categoria
  * @body {object} body - Dados para atualização
  */
-router.put('/:id', updateCategoria);
+router.put('/:id', requireAuth, requireAdmin, updateCategoria);
 
 /**
  * @route DELETE /api/categorias/:id
  * @description Remove uma categoria
  * @param {number} id - ID da categoria
  */
-router.delete('/:id', deleteCategoria);
+router.delete('/:id', requireAuth, requireAdmin, deleteCategoria);
 
 export default router;

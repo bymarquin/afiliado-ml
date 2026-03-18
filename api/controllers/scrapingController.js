@@ -13,13 +13,8 @@ function parseScrapingResult(scrapeResult) {
 }
 
 /**
- * Controller para gerenciar requisições de scraping
- */
-
-/**
- * Realiza o scraping de um produto e retorna os dados
- * @param {Object} req - Objeto da requisição Express
- * @param {Object} res - Objeto da resposta Express
+ * @route GET /api/scrape/scrape
+ * @description Realiza o scraping de um produto e retorna os dados
  */
 export async function scrapeProductController(req, res) {
   const { url } = req.query;

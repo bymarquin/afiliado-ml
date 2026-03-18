@@ -7,7 +7,7 @@ export const up = async (queryInterface, Sequelize) => {
       autoIncrement: true,
       allowNull: false,
     },
-    produto_id: {
+    product_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
@@ -17,7 +17,7 @@ export const up = async (queryInterface, Sequelize) => {
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
     },
-    categoria_id: {
+    category_id: {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
@@ -39,17 +39,17 @@ export const up = async (queryInterface, Sequelize) => {
     },
   });
 
-  await queryInterface.addIndex('produto_categorias', ['produto_id', 'categoria_id'], {
+  await queryInterface.addIndex('produto_categorias', ['product_id', 'category_id'], {
     unique: true,
     name: 'idx_produto_categorias_unique',
   });
 
-  await queryInterface.addIndex('produto_categorias', ['produto_id'], {
-    name: 'idx_produto_categorias_produto',
+  await queryInterface.addIndex('produto_categorias', ['product_id'], {
+    name: 'idx_produto_categorias_product',
   });
 
-  await queryInterface.addIndex('produto_categorias', ['categoria_id'], {
-    name: 'idx_produto_categorias_categoria',
+  await queryInterface.addIndex('produto_categorias', ['category_id'], {
+    name: 'idx_produto_categorias_category',
   });
 };
 

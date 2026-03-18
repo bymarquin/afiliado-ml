@@ -2,7 +2,7 @@ import express from 'express';
 import {
   scrapeAndCreateProduto,
   scrapeProduto,
-} from '../controllers/produtoScrapingController.js';
+} from '../controllers/productScrapingController.js';
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
  * @description Faz scraping de um produto do Mercado Livre e cria no banco
  * @body {object} body - Dados para scraping
  * @body {string} url - URL do produto no Mercado Livre (obrigatório)
- * @body {string} url_afiliado - URL de afiliado (opcional, usa a própria URL se não fornecido)
+ * @body {string} affiliate_url - URL de afiliado (opcional, usa a própria URL se não fornecido)
  * @returns {object} produto - Produto criado com dados do scraping
  */
 router.post('/scraping', scrapeAndCreateProduto);

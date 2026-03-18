@@ -1,5 +1,6 @@
 import express from 'express';
-import { atualizarPrecos, statusPrecos } from '../controllers/precoController.js';
+import { atualizarPrecos, statusPrecos } from '../controllers/priceController.js';
+import { requireAuth, requireAdmin } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -7,9 +8,10 @@ const router = express.Router();
  * @route POST /api/precos/atualizar
  * @description Aciona manualmente a atualização de preços
  * @body {object} body - Dados opcionais
- * @body {number} produto_id - ID do produto para atualizar (opcional, atualiza todos se não informado)
+ * @body {number} product_id - ID do produto para atualizar (opcional, atualiza todos se não informado)
  */
-router.post('/atualizar', atualizarPrecos);
+router.post('/atualizar', requireAuth, requireAdmin, atualizarPrecos);
+router.post('/update', requireAuth, requireAdmin, atualizarPrecos);
 
 /**
  * @route GET /api/precos/status

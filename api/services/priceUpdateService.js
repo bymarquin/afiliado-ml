@@ -18,10 +18,6 @@ class PriceUpdateService {
     };
   }
 
-  /**
-   * Inicia o serviço de atualização automática
-   * @param {number} intervalMs - Intervalo em milissegundos
-   */
   start(intervalMs) {
     if (this.interval) {
       console.log('[PriceUpdate] Serviço já está rodando');
@@ -29,19 +25,14 @@ class PriceUpdateService {
     }
 
     console.log(`[PriceUpdate] Iniciando serviço com intervalo de ${this._formatInterval(intervalMs)}`);
-    
-    // Executa imediatamente na primeira vez
+
     this.run();
-    
-    // Agenda execuções periódicas
+
     this.interval = setInterval(() => {
       this.run();
     }, intervalMs);
   }
 
-  /**
-   * Para o serviço de atualização
-   */
   stop() {
     if (this.interval) {
       clearInterval(this.interval);
@@ -50,9 +41,6 @@ class PriceUpdateService {
     }
   }
 
-  /**
-   * Executa uma verificação de preços
-   */
   async run() {
     if (this.isRunning) {
       console.log('[PriceUpdate] Execução anterior ainda em andamento, pulando...');
@@ -65,9 +53,8 @@ class PriceUpdateService {
     try {
       console.log('[PriceUpdate] Iniciando verificação de preços...');
 
-      // Busca todos os produtos ativos
       const produtos = await Produto.findAll({
-        where: { status: 'ativo' },
+        where: { status: 'active' },
       });
 
       console.log(`[PriceUpdate] ${produtos.length} produtos para verificar`);
@@ -76,9 +63,12 @@ class PriceUpdateService {
 
       for (const produto of produtos) {
         try {
-          await this._checkAndUpdateProduto(produto);
+          const updated = await this._checkAndUpdateProduto(produto);
+          if (updated) {
+            updatesCount += 1;
+          }
         } catch (error) {
-          console.error(`[PriceUpdate] Erro ao verificar ${produto.mlb_id}: ${error.message}`);
+          console.error(`[PriceUpdate] Erro ao verificar ${produto.meli_id}: ${error.message}`);
         }
       }
 
@@ -87,7 +77,6 @@ class PriceUpdateService {
 
       const duration = Date.now() - startTime;
       console.log(`[PriceUpdate] Verificação concluída em ${duration}ms | ${updatesCount} atualizações`);
-
     } catch (error) {
       console.error('[PriceUpdate] Erro na execução:', error.message);
     } finally {
@@ -95,76 +84,60 @@ class PriceUpdateService {
     }
   }
 
-  /**
-   * Verifica e atualiza um produto específico
-   * @param {Produto} produto - Produto do banco
-   */
   async _checkAndUpdateProduto(produto) {
     try {
-      // Faz scraping do produto
-      const scrapeResult = await scrapeProduct(produto.url_produto);
-      const scrapedData = typeof scrapeResult === 'string' 
-        ? JSON.parse(scrapeResult) 
-        : scrapeResult;
-      
+      const scrapeResult = await scrapeProduct(produto.product_url);
+      const scrapedData = typeof scrapeResult === 'string' ? JSON.parse(scrapeResult) : scrapeResult;
+
       const scrapedProduto = scrapedData[0];
 
       if (!scrapedProduto) {
-        console.log(`[PriceUpdate] ${produto.mlb_id}: Dados não encontrados`);
-        return;
+        console.log(`[PriceUpdate] ${produto.meli_id}: Dados não encontrados`);
+        return false;
       }
 
-      // Compara preços
-      const precoAtual = parseFloat(produto.preco);
-      const precoScraped = parseFloat(scrapedProduto.price);
-      const precoOriginalScraped = scrapedProduto.original_price 
-        ? parseFloat(scrapedProduto.original_price) 
+      const currentPrice = parseFloat(produto.price);
+      const scrapedPrice = parseFloat(scrapedProduto.price);
+      const scrapedOriginalPrice = scrapedProduto.original_price
+        ? parseFloat(scrapedProduto.original_price)
         : null;
 
       let changed = false;
       const changes = [];
 
-      // Verifica mudança de preço
-      if (precoScraped && precoAtual !== precoScraped) {
-        changes.push(`preço: R$ ${precoAtual} → R$ ${precoScraped}`);
+      if (scrapedPrice && currentPrice !== scrapedPrice) {
+        changes.push(`preço: R$ ${currentPrice} → R$ ${scrapedPrice}`);
         changed = true;
       }
 
-      // Verifica mudança de preço original
-      const precoOriginalAtual = produto.preco_original 
-        ? parseFloat(produto.preco_original) 
-        : null;
-      
-      if (precoOriginalScraped && precoOriginalAtual !== precoOriginalScraped) {
-        changes.push(`preço original: R$ ${precoOriginalAtual || 0} → R$ ${precoOriginalScraped}`);
+      const currentOriginalPrice = produto.original_price ? parseFloat(produto.original_price) : null;
+
+      if (scrapedOriginalPrice && currentOriginalPrice !== scrapedOriginalPrice) {
+        changes.push(`preço original: R$ ${currentOriginalPrice || 0} → R$ ${scrapedOriginalPrice}`);
         changed = true;
       }
 
-      // Atualiza se houve mudança
       if (changed) {
         await produto.update({
-          preco: precoScraped || precoAtual,
-          preco_original: precoOriginalScraped || produto.preco_original,
+          price: scrapedPrice || currentPrice,
+          original_price: scrapedOriginalPrice || produto.original_price,
         });
 
         this.stats.totalUpdates++;
         this.stats.lastUpdate = new Date();
 
-        console.log(`[PriceUpdate] ✅ ${produto.mlb_id}: ${changes.join(', ')}`);
-      } else {
-        console.log(`[PriceUpdate] ✓ ${produto.mlb_id}: Sem alterações`);
+        console.log(`[PriceUpdate] ✅ ${produto.meli_id}: ${changes.join(', ')}`);
+        return true;
       }
 
+      console.log(`[PriceUpdate] ✓ ${produto.meli_id}: Sem alterações`);
+      return false;
     } catch (error) {
-      console.error(`[PriceUpdate] ❌ ${produto.mlb_id}: ${error.message}`);
+      console.error(`[PriceUpdate] ❌ ${produto.meli_id}: ${error.message}`);
+      return false;
     }
   }
 
-  /**
-   * Formata intervalo em texto legível
-   * @param {number} ms - Milissegundos
-   * @returns {string}
-   */
   _formatInterval(ms) {
     const hours = ms / (1000 * 60 * 60);
     if (hours >= 1) {
@@ -174,10 +147,6 @@ class PriceUpdateService {
     return `${minutes}min`;
   }
 
-  /**
-   * Retorna status do serviço
-   * @returns {Object}
-   */
   getStatus() {
     return {
       isRunning: this.isRunning,
@@ -188,8 +157,5 @@ class PriceUpdateService {
   }
 }
 
-// Instância singleton do serviço
 export const priceUpdateService = new PriceUpdateService();
-
-// Exporta também a classe para testes
 export { PriceUpdateService };

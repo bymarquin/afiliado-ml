@@ -1,16 +1,16 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   class Categoria extends Model {
     static associate(models) {
       Categoria.belongsTo(models.Categoria, {
-        as: 'categoriaPai',
-        foreignKey: 'categoria_pai_id',
+        as: 'parentCategory',
+        foreignKey: 'parent_category_id',
       });
 
       Categoria.hasMany(models.Categoria, {
-        as: 'subcategorias',
-        foreignKey: 'categoria_pai_id',
+        as: 'subcategories',
+        foreignKey: 'parent_category_id',
       });
 
       Categoria.belongsToMany(models.Produto, {
@@ -19,9 +19,9 @@ export default (sequelize, DataTypes) => {
           unique: false,
           timestamps: false,
         },
-        foreignKey: 'categoria_id',
-        otherKey: 'produto_id',
-        as: 'produtos',
+        foreignKey: 'category_id',
+        otherKey: 'product_id',
+        as: 'products',
       });
     }
   }
@@ -34,7 +34,7 @@ export default (sequelize, DataTypes) => {
         autoIncrement: true,
         allowNull: false,
       },
-      nome: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
@@ -44,7 +44,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      categoria_pai_id: {
+      parent_category_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
@@ -52,7 +52,7 @@ export default (sequelize, DataTypes) => {
           key: 'id',
         },
       },
-      ativo: {
+      is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
@@ -65,7 +65,7 @@ export default (sequelize, DataTypes) => {
       underscored: true,
       indexes: [
         { fields: ['slug'], name: 'idx_categorias_slug' },
-        { fields: ['categoria_pai_id'], name: 'idx_categorias_pai' },
+        { fields: ['parent_category_id'], name: 'idx_categorias_parent_category' },
       ],
     }
   );

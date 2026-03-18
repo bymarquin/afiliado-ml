@@ -7,7 +7,7 @@ export const up = async (queryInterface, Sequelize) => {
       autoIncrement: true,
       allowNull: false,
     },
-    nome: {
+    name: {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true,
@@ -17,7 +17,7 @@ export const up = async (queryInterface, Sequelize) => {
       allowNull: false,
       unique: true,
     },
-    categoria_pai_id: {
+    parent_category_id: {
       type: Sequelize.INTEGER,
       allowNull: true,
       references: {
@@ -27,7 +27,7 @@ export const up = async (queryInterface, Sequelize) => {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',
     },
-    ativo: {
+    is_active: {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
     },
@@ -47,8 +47,8 @@ export const up = async (queryInterface, Sequelize) => {
     name: 'idx_categorias_slug',
   });
 
-  await queryInterface.addIndex('categorias', ['categoria_pai_id'], {
-    name: 'idx_categorias_pai',
+  await queryInterface.addIndex('categorias', ['parent_category_id'], {
+    name: 'idx_categorias_parent_category',
   });
 };
 
