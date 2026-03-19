@@ -24,11 +24,6 @@ export const up = async (queryInterface, Sequelize) => {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
     },
-    is_admin: {
-      type: Sequelize.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
     created_at: {
       type: Sequelize.DATE,
       allowNull: false,

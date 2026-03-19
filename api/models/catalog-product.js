@@ -30,7 +30,7 @@ export default (sequelize, DataTypes) => {
         unique: true,
       },
       title: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       description: {
@@ -46,15 +46,15 @@ export default (sequelize, DataTypes) => {
         allowNull: true,
       },
       image_url: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       product_url: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       affiliate_url: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       rating: {

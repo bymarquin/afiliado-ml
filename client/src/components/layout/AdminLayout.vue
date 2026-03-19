@@ -39,7 +39,7 @@ function handleSidebarSelect(id) {
 </script>
 
 <template>
-  <div class="h-screen bg-gray-50 flex overflow-hidden">
+  <div class="h-screen bg-gray-50 dark:bg-neutral-950 flex overflow-hidden">
     <Transition name="fade">
       <div
         v-if="props.isMobileMenuOpen"
@@ -64,16 +64,16 @@ function handleSidebarSelect(id) {
         'lg:py-6 lg:pr-6'
       ]"
     >
-      <header class="lg:hidden sticky top-0 z-30 bg-gray-50 border-b border-gray-200">
+      <header class="lg:hidden sticky top-0 z-30 bg-gray-50 dark:bg-neutral-950 border-b border-gray-200 dark:border-neutral-800">
         <div class="flex items-center justify-between px-4 py-3">
           <button
-            class="p-2 -ml-2 rounded-xl text-gray-800 hover:bg-gray-200 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            class="p-2 -ml-2 rounded-xl text-gray-800 dark:text-neutral-200 hover:bg-gray-200 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label="Abrir menu"
             @click="openMobileMenu"
           >
             <Menu class="w-5 h-5" />
           </button>
-          <span class="text-sm font-semibold text-gray-950">{{ props.mobileTitle }}</span>
+          <span class="text-sm font-semibold text-gray-950 dark:text-neutral-100">{{ props.mobileTitle }}</span>
           <div class="w-9" />
         </div>
       </header>
@@ -82,7 +82,7 @@ function handleSidebarSelect(id) {
         class="flex flex-col min-[601px]:flex-row min-[601px]:items-center min-[601px]:justify-between gap-4 px-5 md:px-8 lg:px-10 py-6 lg:pt-0 lg:pb-6 shrink-0"
       >
         <div>
-          <h1 class="text-2xl md:text-3xl font-semibold text-gray-950 tracking-tight flex items-center gap-2">
+          <h1 class="text-2xl md:text-3xl font-semibold text-gray-950 dark:text-neutral-100 tracking-tight flex items-center gap-2">
             <slot name="title-icon" />
             {{ props.title }}
           </h1>
@@ -92,7 +92,7 @@ function handleSidebarSelect(id) {
         </div>
       </section>
 
-      <div class="flex-1 mx-4 mb-4 sm:mx-5 sm:mb-5 lg:mx-0 lg:mb-0 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+      <div class="flex-1 mx-4 mb-4 sm:mx-5 sm:mb-5 lg:mx-0 lg:mb-0 bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm flex flex-col overflow-hidden">
         <main class="flex-1 p-5 md:p-8 lg:p-10 w-full overflow-y-auto">
           <slot />
         </main>

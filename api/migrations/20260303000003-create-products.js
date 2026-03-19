@@ -13,7 +13,7 @@ export const up = async (queryInterface, Sequelize) => {
       unique: true,
     },
     title: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: false,
     },
     description: {
@@ -29,15 +29,15 @@ export const up = async (queryInterface, Sequelize) => {
       allowNull: true,
     },
     image_url: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: true,
     },
     product_url: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: false,
     },
     affiliate_url: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: true,
     },
     rating: {

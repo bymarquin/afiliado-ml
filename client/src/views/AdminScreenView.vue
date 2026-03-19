@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { LineChart, Plus } from 'lucide-vue-next'
+import http from '@/services/http'
 
 // Componentes extraídos
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -21,29 +22,29 @@ function handleSidebarSelect(id) {
 }
 
 // ── Mock Data ──
-const kpis = [
+const kpis = ref([
   {
-    id: 'sales',
-    label: 'Total em vendas',
-    value: 'R$ 0,00',
-    trend: '',
-    trendUp: false
-  },
-  {
-    id: 'transactions',
-    label: 'Total de transações',
+    id: 'products',
+    label: 'Total de produtos',
     value: '0',
     trend: '',
-    trendUp: false
+    trendUp: false,
   },
   {
-    id: 'ticket',
-    label: 'Ticket Médio',
-    value: 'R$ 0,00',
+    id: 'categories',
+    label: 'Total de categorias',
+    value: '0',
     trend: '',
-    trendUp: false
+    trendUp: false,
   },
-]
+  {
+    id: 'clicks',
+    label: 'Total de clicks',
+    value: '0',
+    trend: '',
+    trendUp: false,
+  },
+])
 
 const chartData = [
   { day: 'Seg', clicks: 210 },
@@ -55,13 +56,7 @@ const chartData = [
   { day: 'Dom', clicks: 127 },
 ]
 
-const topProducts = [
-  { id: 1, name: 'Fone Bluetooth QCY T13', category: 'Eletrônicos', clicks: 342, rating: 4.8 },
-  { id: 2, name: 'Camiseta Dry Fit Nike', category: 'Moda', clicks: 289, rating: 4.6 },
-  { id: 3, name: 'Relógio Smartwatch Xiaomi', category: 'Eletrônicos', clicks: 256, rating: 4.7 },
-  { id: 4, name: 'Cadeira Gamer Thunder X3', category: 'Móveis', clicks: 198, rating: 4.5 },
-  { id: 5, name: 'Kit Skincare Simple', category: 'Beleza', clicks: 165, rating: 4.3 },
-]
+const topProducts = ref([])
 
 const recentActivity = [
   { id: 1, action: 'Produto cadastrado', item: 'Fone Bluetooth QCY T13', time: 'Há 2 horas' },
@@ -70,6 +65,70 @@ const recentActivity = [
   { id: 4, action: 'Produto cadastrado', item: 'Cadeira Gamer Thunder X3', time: 'Há 2 dias' },
   { id: 5, action: 'Categoria criada', item: 'Móveis', time: 'Há 3 dias' },
 ]
+
+function formatInt(value) {
+  return Number(value || 0).toLocaleString('pt-BR')
+}
+
+async function fetchTotalClicks() {
+  let page = 1
+  let totalPages = 1
+  let totalClicks = 0
+  const limit = 100
+  let safeGuard = 0
+
+  while (page <= totalPages && safeGuard < 100) {
+    const { data } = await http.get('/produtos', {
+      params: { page, limit, order: 'id', direction: 'ASC' },
+    })
+
+    const rows = data?.data || []
+    totalPages = data?.pagination?.totalPages || 1
+    totalClicks += rows.reduce((acc, product) => acc + Number(product.click_count || 0), 0)
+    page += 1
+    safeGuard += 1
+  }
+
+  return totalClicks
+}
+
+async function loadDashboardData() {
+  try {
+    const [productsResponse, categoriesResponse, topProductsResponse] = await Promise.all([
+      http.get('/produtos', { params: { page: 1, limit: 1 } }),
+      http.get('/categorias'),
+      http.get('/produtos', {
+        params: { page: 1, limit: 5, order: 'click_count', direction: 'DESC' },
+      }),
+    ])
+
+    const totalProducts = productsResponse?.data?.pagination?.total || 0
+    const totalCategories = Array.isArray(categoriesResponse?.data?.data)
+      ? categoriesResponse.data.data.length
+      : 0
+    const totalClicks = await fetchTotalClicks()
+
+    kpis.value = kpis.value.map((kpi) => {
+      if (kpi.id === 'products') return { ...kpi, value: formatInt(totalProducts) }
+      if (kpi.id === 'categories') return { ...kpi, value: formatInt(totalCategories) }
+      if (kpi.id === 'clicks') return { ...kpi, value: formatInt(totalClicks) }
+      return kpi
+    })
+
+    const rows = topProductsResponse?.data?.data || []
+    topProducts.value = rows.map((product) => ({
+      id: product.id,
+      name: product.title,
+      category: product.categories?.[0]?.name || 'Sem categoria',
+      clicks: Number(product.click_count || 0),
+      rating: Number(product.rating || 0),
+    }))
+  } catch (error) {
+    console.error('Erro ao carregar dashboard:', error?.message || error)
+  }
+}
+
+onMounted(loadDashboardData)
 </script>
 
 <template>
@@ -82,7 +141,7 @@ const recentActivity = [
     @select-item="handleSidebarSelect"
   >
     <template #title-icon>
-      <LineChart class="w-7 h-7 text-gray-950" :stroke-width="2.25" />
+      <LineChart class="w-7 h-7 text-gray-950 dark:text-neutral-100" :stroke-width="2.25" />
     </template>
 
     <template #header-actions>

@@ -11,7 +11,7 @@ import {
   getProdutosDestaque,
   getProdutosRandom,
 } from '../controllers/productController.js';
-import { requireAuth, requireAdmin } from '../middlewares/auth.js';
+import { requireAuth } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -92,7 +92,7 @@ router.get('/:id', getProduto);
  * @body {boolean} featured - Destaque na homepage
  * @body {number[]} category_ids - Array de IDs de categorias
  */
-router.post('/', requireAuth, requireAdmin, createProduto);
+router.post('/', requireAuth, createProduto);
 
 /**
  * @route PUT /api/produtos/:id
@@ -100,13 +100,13 @@ router.post('/', requireAuth, requireAdmin, createProduto);
  * @param {number} id - ID do produto
  * @body {object} body - Dados para atualização
  */
-router.put('/:id', requireAuth, requireAdmin, updateProduto);
+router.put('/:id', requireAuth, updateProduto);
 
 /**
  * @route DELETE /api/produtos/:id
  * @description Remove um produto
  * @param {number} id - ID do produto
  */
-router.delete('/:id', requireAuth, requireAdmin, deleteProduto);
+router.delete('/:id', requireAuth, deleteProduto);
 
 export default router;

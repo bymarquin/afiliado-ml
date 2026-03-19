@@ -1,6 +1,8 @@
 import { scrapeProduct as scrapeProductService } from '../services/scraping.js';
 import { Produto } from '../models/index.js';
 
+const ALLOWED_STATUS = ['active', 'inactive', 'out_of_stock'];
+
 function parseScrapingResult(scrapeResult) {
   if (typeof scrapeResult !== 'string') {
     return scrapeResult;
@@ -11,6 +13,20 @@ function parseScrapingResult(scrapeResult) {
   } catch {
     return null;
   }
+}
+
+function parseNullableNumber(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function parseBoolean(value, fallback = false) {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value === 'boolean') return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return fallback;
 }
 
 /**
@@ -77,19 +93,50 @@ export async function scrapeAndCreateProduto(req, res) {
       });
     }
 
+    const title = req.body.title ?? req.body.titulo ?? produto.title;
+    const description = req.body.description ?? req.body.descricao ?? produto.description ?? null;
+    const price = parseNullableNumber(req.body.price ?? req.body.preco ?? produto.price);
+    const originalPrice = parseNullableNumber(
+      req.body.original_price ?? req.body.preco_original ?? produto.original_price
+    );
+    const imageUrl = req.body.image_url ?? req.body.imagem_url ?? produto.image ?? null;
+    const productUrl = req.body.product_url ?? req.body.url_produto ?? produto.url ?? url;
+    const finalAffiliateUrl = affiliateUrl || url;
+    const rating = parseNullableNumber(req.body.rating ?? req.body.avaliacao ?? produto.rate);
+    const ratingCount = parseNullableNumber(
+      req.body.rating_count ?? req.body.avaliacao_qtd ?? produto.rateCount
+    );
+    const status = req.body.status ?? 'active';
+    const featured = parseBoolean(req.body.featured ?? req.body.destaque, false);
+
+    if (!title || price === null || !productUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Dados inválidos',
+        message: 'title, price e product_url são obrigatórios',
+      });
+    }
+
+    if (!ALLOWED_STATUS.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Status inválido',
+      });
+    }
+
     const novoProduto = await Produto.create({
       meli_id: meliId,
-      title: produto.title,
-      description: produto.description || null,
-      price: produto.price,
-      original_price: produto.original_price || null,
-      image_url: produto.image || null,
-      product_url: produto.url,
-      affiliate_url: affiliateUrl || url,
-      rating: produto.rate || null,
-      rating_count: produto.rateCount || null,
-      status: 'active',
-      featured: false,
+      title,
+      description,
+      price,
+      original_price: originalPrice,
+      image_url: imageUrl,
+      product_url: productUrl,
+      affiliate_url: finalAffiliateUrl,
+      rating,
+      rating_count: ratingCount,
+      status,
+      featured,
     });
 
     res.status(201).json({

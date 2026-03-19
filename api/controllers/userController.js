@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const ALLOWED_ORDER_FIELDS = ['id', 'name', 'email', 'is_admin', 'created_at', 'updated_at'];
+const ALLOWED_ORDER_FIELDS = ['id', 'name', 'email', 'created_at', 'updated_at'];
 
 function parsePositiveInt(value, fallback) {
   const parsed = Number.parseInt(value, 10);
@@ -128,9 +128,6 @@ export async function createUsuario(req, res) {
     const email = req.body.email;
     const password = req.body.password ?? req.body.senha;
     const isActive = req.body.is_active ?? req.body.ativo ?? true;
-    const usersCount = await Usuario.count();
-    const isFirstUserBootstrap = usersCount === 0;
-    const isAdmin = isFirstUserBootstrap ? true : (req.body.is_admin ?? req.body.isAdmin ?? false);
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -156,7 +153,6 @@ export async function createUsuario(req, res) {
       email,
       password_hash,
       is_active: isActive,
-      is_admin: isAdmin,
     });
 
     res.status(201).json({
@@ -166,7 +162,6 @@ export async function createUsuario(req, res) {
         name: usuario.name,
         email: usuario.email,
         is_active: usuario.is_active,
-        is_admin: usuario.is_admin,
         created_at: usuario.created_at,
       },
     });
@@ -191,7 +186,6 @@ export async function updateUsuario(req, res) {
     const email = req.body.email;
     const password = req.body.password ?? req.body.senha;
     const isActive = req.body.is_active ?? req.body.ativo;
-    const isAdmin = req.body.is_admin ?? req.body.isAdmin;
 
     const usuario = await Usuario.findByPk(id);
 
@@ -219,7 +213,6 @@ export async function updateUsuario(req, res) {
       name: name ?? usuario.name,
       email: email ?? usuario.email,
       is_active: isActive ?? usuario.is_active,
-      is_admin: isAdmin ?? usuario.is_admin,
     };
 
     if (password) {
@@ -235,7 +228,6 @@ export async function updateUsuario(req, res) {
         name: usuario.name,
         email: usuario.email,
         is_active: usuario.is_active,
-        is_admin: usuario.is_admin,
         updated_at: usuario.updated_at,
       },
     });
@@ -338,7 +330,6 @@ export async function loginUsuario(req, res) {
       {
         id: usuario.id,
         email: usuario.email,
-        is_admin: usuario.is_admin,
       },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
@@ -350,7 +341,6 @@ export async function loginUsuario(req, res) {
         id: usuario.id,
         name: usuario.name,
         email: usuario.email,
-        is_admin: usuario.is_admin,
         token,
       },
     });

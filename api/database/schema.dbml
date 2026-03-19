@@ -14,13 +14,13 @@ Table usuarios {
 Table produtos {
   id integer [primary key, increment]
   mlb_id varchar [unique, not null, note: 'ID do produto no Mercado Livre (ex: MLB123456)']
-  titulo varchar [not null]
+  titulo text [not null]
   descricao text
   preco decimal [not null]
   preco_original decimal [note: 'Preço original (antes do desconto)']
-  imagem_url varchar
-  url_produto varchar [not null, note: 'URL original do produto']
-  affiliate_url varchar [note: 'Affiliate URL for redirect']
+  imagem_url text
+  url_produto text [not null, note: 'URL original do produto']
+  affiliate_url text [note: 'Affiliate URL for redirect']
   avaliacao decimal [note: 'Avaliação média (0-5)']
   avaliacao_qtd integer [note: 'Quantidade de avaliações']
   status varchar [default: 'ativo', note: 'ativo, inativo, sem_estoque']

@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 
+@variant dark (&:where(.dark, .dark *));
 /* ===========================
    DESIGN TOKENS - E-commerce
    =========================== */
@@ -36,6 +37,54 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.dark body {
+  background-color: #0a0a0a;
+  color: #f5f5f5;
+}
+
+/* Inputs globais acompanhando tema */
+:where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+    select,
+    textarea
+  ) {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dark
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+    select,
+    textarea
+  ) {
+  background-color: rgb(38 38 38);
+  border-color: rgb(82 82 82);
+  color: rgb(245 245 245);
+}
+
+.dark
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+    select,
+    textarea
+  )::placeholder {
+  color: rgb(163 163 163);
+}
+
+.dark
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+    select,
+    textarea
+  ):focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
@@ -62,6 +111,10 @@ html {
   border-radius: 10px;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #171717;
+}
+
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, var(--color-gray-400), var(--color-gray-800));
   border-radius: 10px;
@@ -73,6 +126,11 @@ html {
   background: linear-gradient(180deg, var(--color-primary), var(--color-primary-dark));
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #525252, #262626);
+  border-color: #171717;
+}
+
 ::-webkit-scrollbar-corner {
   background: var(--color-gray-100);
 }
@@ -81,4 +139,8 @@ html {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-gray-400) var(--color-gray-100);
+}
+
+.dark * {
+  scrollbar-color: #525252 #171717;
 }

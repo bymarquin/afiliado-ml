@@ -38,7 +38,7 @@ async function resolveAuthenticatedUser(req) {
   }
 
   const user = await Usuario.findByPk(payload.id, {
-    attributes: ['id', 'name', 'email', 'is_active', 'is_admin'],
+    attributes: ['id', 'name', 'email', 'is_active'],
   });
 
   if (!user) {
@@ -80,15 +80,15 @@ export async function requireAuth(req, res, next) {
 }
 
 /**
- * O que faz: Exige perfil de administrador.
- * Como faz: Verifica `req.user.is_admin` após middleware de autenticação.
- * Para que serve: Proteger ações administrativas (CRUD de catálogo, configurações, etc.).
+ * O que faz: Mantém compatibilidade com rotas legadas que exigiam admin.
+ * Como faz: Apenas garante que existe usuário autenticado (equivalente a requireAuth).
+ * Para que serve: Evitar quebrar imports antigos após remoção de `is_admin`.
  */
 export function requireAdmin(req, res, next) {
-  if (!req.user || !req.user.is_admin) {
+  if (!req.user) {
     return res.status(403).json({
       success: false,
-      error: 'Acesso restrito a administradores',
+      error: 'Usuário não autenticado',
     });
   }
 

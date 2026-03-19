@@ -32,7 +32,7 @@ function selectPeriod(id) {
         'px-4 py-1.5 rounded-xl text-[13px] font-semibold transition-all duration-200',
         modelValue === period.id 
           ? 'bg-primary text-white shadow-sm shadow-primary/20' 
-          : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900'
+          : 'bg-white dark:bg-neutral-900 text-gray-600 dark:text-neutral-300 border border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
       ]"
     >
       {{ period.label }}

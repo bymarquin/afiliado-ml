@@ -8,7 +8,7 @@ import {
   deleteCategoria,
   getCategoriasArvore,
 } from '../controllers/categoryController.js';
-import { requireAuth, requireAdmin } from '../middlewares/auth.js';
+import { requireAuth } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -50,7 +50,7 @@ router.get('/:id', getCategoria);
  * @body {number} parent_category_id - ID da categoria pai (opcional)
  * @body {boolean} is_active - Status ativo (padrão: true)
  */
-router.post('/', requireAuth, requireAdmin, createCategoria);
+router.post('/', requireAuth, createCategoria);
 
 /**
  * @route PUT /api/categorias/:id
@@ -58,13 +58,13 @@ router.post('/', requireAuth, requireAdmin, createCategoria);
  * @param {number} id - ID da categoria
  * @body {object} body - Dados para atualização
  */
-router.put('/:id', requireAuth, requireAdmin, updateCategoria);
+router.put('/:id', requireAuth, updateCategoria);
 
 /**
  * @route DELETE /api/categorias/:id
  * @description Remove uma categoria
  * @param {number} id - ID da categoria
  */
-router.delete('/:id', requireAuth, requireAdmin, deleteCategoria);
+router.delete('/:id', requireAuth, deleteCategoria);
 
 export default router;
