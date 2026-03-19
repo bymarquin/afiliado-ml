@@ -5,6 +5,7 @@ import produtosScrapingRoutes from "./produtos-scraping.js";
 import categoriasRoutes from "./categorias.js";
 import usuariosRoutes from "./usuarios.js";
 import precosRoutes from "./precos.js";
+import dashboardRoutes from "./dashboard.js";
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use("/users", usuariosRoutes);
 router.use("/usuarios", usuariosRoutes);
 router.use("/prices", precosRoutes);
 router.use("/precos", precosRoutes);
+router.use("/dashboard", dashboardRoutes);
 
 export default router;

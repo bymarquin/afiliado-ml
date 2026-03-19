@@ -100,7 +100,7 @@ function toggleDarkMode() {
 <template>
   <aside
     :class="[
-      'fixed top-0 left-0 z-50 h-screen w-64 bg-gray-50 dark:bg-neutral-950 flex flex-col transition-all duration-300 ease-in-out',
+      'sidebar-shell fixed top-0 left-0 z-50 h-screen w-64 bg-gray-50 dark:bg-neutral-950 flex flex-col overflow-hidden',
       props.isCollapsed ? 'lg:w-20' : 'lg:w-64',
       'lg:translate-x-0',
       isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
@@ -138,12 +138,12 @@ function toggleDarkMode() {
       </button>
     </div>
 
-    <nav class="flex-1 px-4 py-2 space-y-1.5 overflow-y-auto">
+    <nav class="flex-1 px-4 py-2 space-y-1.5 overflow-y-auto overflow-x-hidden">
       <button
         v-for="item in menuItems"
         :key="item.id"
         :class="[
-          'group w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          'group w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary whitespace-nowrap',
           props.isCollapsed ? 'lg:justify-center lg:px-0 lg:gap-0' : '',
           activeItem === item.id
             ? 'bg-primary text-white shadow-md shadow-primary/25'
@@ -154,50 +154,59 @@ function toggleDarkMode() {
         <component
           :is="item.icon"
           :class="[
-            'w-5 h-5 shrink-0 transition-colors duration-300',
+            'w-5 h-5 shrink-0 transition-colors duration-200',
             activeItem === item.id
               ? 'text-white'
               : 'text-gray-400 dark:text-neutral-500 group-hover:text-gray-950 dark:group-hover:text-neutral-100',
           ]"
         />
-        <span v-if="!props.isCollapsed">{{ item.label }}</span>
+        <span
+          :class="[
+            'sidebar-label',
+            props.isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'lg:opacity-100 lg:w-auto',
+          ]"
+        >{{ item.label }}</span>
       </button>
     </nav>
 
     <div class="mt-auto px-4 py-4 border-t border-gray-200 dark:border-neutral-800 relative">
-      <div v-if="props.isCollapsed" class="w-full flex items-center justify-center px-2 py-2">
-        <button
-          class="p-1.5 rounded-xl hover:bg-gray-200/60 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Opções do perfil"
-          @click="toggleProfileMenu"
-        >
-          <div
-            class="w-10 h-10 rounded-full shadow-sm bg-primary/10 border border-primary/20 shrink-0 flex items-center justify-center"
-          >
-            <span class="text-xs font-bold text-primary">{{ profileInitials }}</span>
-          </div>
-        </button>
-      </div>
-
-      <div v-else class="w-full flex items-center justify-between gap-3 px-2 py-2">
+      <div
+        :class="[
+          'w-full flex items-center gap-3 px-2 py-2 whitespace-nowrap',
+          props.isCollapsed ? 'lg:justify-center' : 'justify-between',
+        ]"
+      >
         <div class="flex items-center gap-3 min-w-0">
-          <div
-            class="w-10 h-10 rounded-full shadow-sm bg-primary/10 border border-primary/20 shrink-0 flex items-center justify-center"
+          <button
+            class="p-0 rounded-xl hover:bg-gray-200/60 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+            :aria-label="props.isCollapsed ? 'Opções do perfil' : undefined"
+            @click="props.isCollapsed ? toggleProfileMenu() : undefined"
           >
-            <span class="text-xs font-bold text-primary">{{ profileInitials }}</span>
-          </div>
-          <div class="flex flex-col min-w-0">
+            <div
+              class="w-10 h-10 rounded-full shadow-sm bg-primary/10 border border-primary/20 flex items-center justify-center"
+            >
+              <span class="text-xs font-bold text-primary">{{ profileInitials }}</span>
+            </div>
+          </button>
+          <div
+            :class="[
+              'sidebar-label flex flex-col min-w-0',
+              props.isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'lg:opacity-100 lg:w-auto',
+            ]"
+          >
             <span
               class="text-[14px] font-bold text-gray-950 dark:text-neutral-100 leading-tight truncate"
-              >{{ profileName }}</span
-            >
+            >{{ profileName }}</span>
             <span class="text-xs text-gray-500 dark:text-neutral-400 font-medium truncate">{{
               profileEmail
             }}</span>
           </div>
         </div>
         <button
-          class="p-1.5 rounded-xl text-gray-400 dark:text-neutral-500 hover:text-gray-950 dark:hover:text-neutral-100 hover:bg-gray-200/60 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          :class="[
+            'sidebar-label p-1.5 rounded-xl text-gray-400 dark:text-neutral-500 hover:text-gray-950 dark:hover:text-neutral-100 hover:bg-gray-200/60 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0',
+            props.isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden lg:p-0' : 'lg:opacity-100 lg:w-auto',
+          ]"
           aria-label="Opções do perfil"
           @click="toggleProfileMenu"
         >
@@ -216,7 +225,10 @@ function toggleDarkMode() {
         <div
           v-if="isProfileMenuOpen"
           :class="[
-            'absolute bottom-[calc(100%-8px)] left-4 right-4 mb-2 rounded-2xl shadow-sm p-1.5 z-50 border',
+            'absolute rounded-2xl shadow-lg p-1.5 z-50 border',
+            props.isCollapsed
+              ? 'left-full ml-3 bottom-0 min-w-50'
+              : 'bottom-[calc(100%-8px)] left-4 right-4 mb-2',
             isDarkMode ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-gray-100',
           ]"
         >
@@ -258,3 +270,26 @@ function toggleDarkMode() {
     </div>
   </aside>
 </template>
+
+<style scoped>
+.sidebar-shell {
+  transition:
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width, transform;
+}
+
+.sidebar-label {
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0s 0.15s;
+  pointer-events: auto;
+}
+
+.sidebar-label.lg\:opacity-0 {
+  transition:
+    opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0s 0.15s;
+  pointer-events: none;
+}
+</style>

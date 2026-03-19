@@ -225,7 +225,7 @@ onBeforeUnmount(() => {
 
       <div v-if="preview" class="grid grid-cols-1 lg:grid-cols-[88px_1fr] gap-4 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800 p-4 mb-5">
         <div
-          class="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex-shrink-0"
+          class="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
         >
           <img
             v-if="preview.image"
@@ -373,13 +373,13 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
-:global(.dark) .input-field {
-  border-color: rgb(64 64 64);
-  background: rgb(38 38 38);
-  color: rgb(245 245 245);
+.dark .input-field {
+  border-color: #404040;
+  background: #171717;
+  color: #f5f5f5;
 }
 
-:global(.dark) .input-field::placeholder {
-  color: rgb(163 163 163);
+.dark .input-field::placeholder {
+  color: #737373;
 }
 </style>

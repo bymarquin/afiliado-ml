@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 import { Menu } from 'lucide-vue-next'
 import AdminSidebar from '@/components/layout/AdminSidebar.vue'
 
@@ -23,7 +23,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:isMobileMenuOpen', 'select-item'])
-const isSidebarCollapsed = ref(false)
+const isSidebarCollapsed = useLocalStorage('admin-sidebar-collapsed', false)
 
 function openMobileMenu() {
   emit('update:isMobileMenuOpen', true)
@@ -59,7 +59,7 @@ function handleSidebarSelect(id) {
 
     <div
       :class="[
-        'flex-1 flex flex-col h-screen',
+        'content-shell flex-1 flex flex-col h-screen',
         isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64',
         'lg:py-6 lg:pr-6'
       ]"
@@ -102,6 +102,10 @@ function handleSidebarSelect(id) {
 </template>
 
 <style scoped>
+.content-shell {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;

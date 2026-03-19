@@ -46,15 +46,8 @@ const kpis = ref([
   },
 ])
 
-const chartData = [
-  { day: 'Seg', clicks: 210 },
-  { day: 'Ter', clicks: 285 },
-  { day: 'Qua', clicks: 340 },
-  { day: 'Qui', clicks: 195 },
-  { day: 'Sex', clicks: 410 },
-  { day: 'Sáb', clicks: 280 },
-  { day: 'Dom', clicks: 127 },
-]
+const chartData = ref([])
+const chartTotalClicks = ref('0')
 
 const topProducts = ref([])
 
@@ -94,12 +87,13 @@ async function fetchTotalClicks() {
 
 async function loadDashboardData() {
   try {
-    const [productsResponse, categoriesResponse, topProductsResponse] = await Promise.all([
+    const [productsResponse, categoriesResponse, topProductsResponse, clicksResponse] = await Promise.all([
       http.get('/produtos', { params: { page: 1, limit: 1 } }),
       http.get('/categorias'),
       http.get('/produtos', {
         params: { page: 1, limit: 5, order: 'click_count', direction: 'DESC' },
       }),
+      http.get('/dashboard/clicks'),
     ])
 
     const totalProducts = productsResponse?.data?.pagination?.total || 0
@@ -123,6 +117,10 @@ async function loadDashboardData() {
       clicks: Number(product.click_count || 0),
       rating: Number(product.rating || 0),
     }))
+
+    // Alimenta o gráfico com dados reais
+    chartData.value = clicksResponse?.data?.data || []
+    chartTotalClicks.value = formatInt(clicksResponse?.data?.totalClicks || 0)
   } catch (error) {
     console.error('Erro ao carregar dashboard:', error?.message || error)
   }
@@ -165,7 +163,7 @@ onMounted(loadDashboardData)
 
     <!-- ──── Clicks Chart ──── -->
     <section class="mb-8">
-      <ClicksChart :data="chartData" totalClicks="1.847" />
+      <ClicksChart :data="chartData" :totalClicks="chartTotalClicks" />
     </section>
 
     <!-- ──── Top Produtos + Atividade Recente ──── -->

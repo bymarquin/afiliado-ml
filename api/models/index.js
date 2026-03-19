@@ -60,3 +60,4 @@ export const Usuario = db.Usuario;
 export const Produto = db.Produto;
 export const Categoria = db.Categoria;
 export const ProdutoCategoria = db.ProdutoCategoria;
+export const ProductClick = db.ProductClick;

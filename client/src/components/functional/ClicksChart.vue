@@ -38,10 +38,10 @@ function barHeight(clicks) {
 
     <!-- Bar Chart CSS -->
     <div class="flex items-end justify-between gap-2 sm:gap-3 h-44 md:h-52 group/chart">
-      <div v-for="bar in data" :key="bar.day" class="flex-1 flex flex-col items-center gap-2 group/bar relative">
+      <div v-for="bar in data" :key="bar.day" class="flex-1 flex flex-col items-center justify-end gap-2 group/bar relative h-full">
         <!-- Tooltip hover -->
         <div
-          class="absolute -top-10 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-gray-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold py-1 px-2.5 rounded-lg pointer-events-none z-10 whitespace-nowrap hidden sm:block">
+          class="absolute top-0 -translate-y-8 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-gray-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold py-1 px-2.5 rounded-lg pointer-events-none z-10 whitespace-nowrap hidden sm:block">
           {{ bar.clicks }} cliques
         </div>
         <!-- Valor no mobile / Fallback -->
@@ -50,7 +50,7 @@ function barHeight(clicks) {
         <div
           class="w-full relative rounded-t-lg overflow-hidden transition-all duration-300 group-hover/chart:opacity-50 group-hover/bar:opacity-100! group-hover/bar:-translate-y-1"
           :style="{ height: barHeight(bar.clicks) }">
-          <div class="absolute inset-0 bg-linear-to-t from-primary to-blue-400" />
+          <div class="absolute inset-0 bg-blue-600 bg-linear-to-t from-primary to-blue-400 dark:from-blue-600 dark:to-blue-400" />
         </div>
         <span class="text-xs font-medium text-gray-400 dark:text-neutral-400 group-hover/bar:text-gray-950 dark:group-hover/bar:text-neutral-100 transition-colors">{{ bar.day }}</span>
       </div>

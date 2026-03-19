@@ -1,4 +1,4 @@
-import { Produto, Categoria } from '../models/index.js';
+import { Produto, Categoria, ProductClick } from '../models/index.js';
 import { Sequelize } from 'sequelize';
 
 const PRODUCT_STATUS = ['active', 'inactive', 'out_of_stock'];
@@ -253,7 +253,10 @@ export async function goToProduto(req, res) {
       });
     }
 
-    await produto.increment('click_count', { by: 1 });
+    await Promise.all([
+      produto.increment('click_count', { by: 1 }),
+      ProductClick.create({ product_id: produto.id }),
+    ]);
     return res.redirect(302, targetUrl);
   } catch (error) {
     console.error('Erro ao registrar clique do produto:', error.message);
