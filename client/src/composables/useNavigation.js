@@ -4,12 +4,13 @@
  */
 
 /** IDs das seções na ordem de exibição */
-export const SECTION_IDS = ['hero', 'benefits', 'products', 'testimonials']
+export const SECTION_IDS = ['hero', 'benefits', 'categories', 'products', 'testimonials']
 
 export function useNavigation() {
     const navLinks = [
         { label: 'Início', href: '#hero', sectionId: 'hero' },
         { label: 'Benefícios', href: '#benefits', sectionId: 'benefits' },
+        { label: 'Categorias', href: '#categories', sectionId: 'categories' },
         { label: 'Produtos', href: '#products', sectionId: 'products' },
         { label: 'Depoimentos', href: '#testimonials', sectionId: 'testimonials' }
     ]

@@ -1,6 +1,7 @@
 <script setup>
 import HeroSection from '@/components/functional/HeroSection.vue'
 import BenefitsSection from '@/components/functional/BenefitsSection.vue'
+import CategoriesSection from '@/components/functional/CategoriesSection.vue'
 import ProductsSection from '@/components/functional/ProductsSection.vue'
 import TestimonialsSection from '@/components/functional/TestimonialsSection.vue'
 import { useLenis } from '@/composables/useLenis'
@@ -21,6 +22,9 @@ useLenis({
 
     <!-- Benefits Section -->
     <BenefitsSection />
+
+    <!-- Categories Section -->
+    <CategoriesSection />
 
     <!-- Products Section -->
     <ProductsSection />
