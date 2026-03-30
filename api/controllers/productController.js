@@ -46,6 +46,28 @@ function normalizeStatus(status) {
   return STATUS_COMPAT_MAP[String(status).toLowerCase()] ?? null;
 }
 
+function parseNumberQuery(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseDateQuery(value, { endOfDay = false } = {}) {
+  if (value === undefined || value === null || value === '') return undefined;
+
+  let parsedDate;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+    const dateWithTime = endOfDay
+      ? `${value}T23:59:59.999Z`
+      : `${value}T00:00:00.000Z`;
+    parsedDate = new Date(dateWithTime);
+  } else {
+    parsedDate = new Date(value);
+  }
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
 /**
  * @route GET /api/produtos
  * @description Lista todos os produtos com paginação e filtros
@@ -59,7 +81,17 @@ export async function listProdutos(req, res) {
       featured,
       destaque,
       categoria,
+      category_id,
+      categoria_id,
       search,
+      price_min,
+      price_max,
+      clicks_min,
+      clicks_max,
+      rating_min,
+      rating_max,
+      updated_from,
+      updated_to,
       order = 'created_at',
       direction = 'DESC',
     } = req.query;
@@ -96,8 +128,121 @@ export async function listProdutos(req, res) {
       where.title = { [Sequelize.Op.iLike]: `%${search}%` };
     }
 
-    if (categoria) {
-      const categoryRecord = await Categoria.findOne({ where: { slug: categoria } });
+    const parsedPriceMin = parseNumberQuery(price_min);
+    const parsedPriceMax = parseNumberQuery(price_max);
+    const parsedClicksMin = parseNumberQuery(clicks_min);
+    const parsedClicksMax = parseNumberQuery(clicks_max);
+    const parsedRatingMin = parseNumberQuery(rating_min);
+    const parsedRatingMax = parseNumberQuery(rating_max);
+    const parsedUpdatedFrom = parseDateQuery(updated_from);
+    const parsedUpdatedTo = parseDateQuery(updated_to, { endOfDay: true });
+
+    const numberQueryValidations = [
+      ['price_min', price_min, parsedPriceMin],
+      ['price_max', price_max, parsedPriceMax],
+      ['clicks_min', clicks_min, parsedClicksMin],
+      ['clicks_max', clicks_max, parsedClicksMax],
+      ['rating_min', rating_min, parsedRatingMin],
+      ['rating_max', rating_max, parsedRatingMax],
+    ];
+
+    for (const [label, rawValue, parsedValue] of numberQueryValidations) {
+      if (rawValue !== undefined && parsedValue === null) {
+        return res.status(400).json({
+          success: false,
+          error: `Filtro ${label} inválido`,
+        });
+      }
+    }
+
+    if (updated_from !== undefined && parsedUpdatedFrom === null) {
+      return res.status(400).json({
+        success: false,
+        error: 'Filtro updated_from inválido',
+      });
+    }
+
+    if (updated_to !== undefined && parsedUpdatedTo === null) {
+      return res.status(400).json({
+        success: false,
+        error: 'Filtro updated_to inválido',
+      });
+    }
+
+    if (
+      parsedPriceMin !== undefined &&
+      parsedPriceMax !== undefined &&
+      parsedPriceMin > parsedPriceMax
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: 'price_min não pode ser maior que price_max',
+      });
+    }
+
+    if (
+      parsedClicksMin !== undefined &&
+      parsedClicksMax !== undefined &&
+      parsedClicksMin > parsedClicksMax
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: 'clicks_min não pode ser maior que clicks_max',
+      });
+    }
+
+    if (
+      parsedRatingMin !== undefined &&
+      parsedRatingMax !== undefined &&
+      parsedRatingMin > parsedRatingMax
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: 'rating_min não pode ser maior que rating_max',
+      });
+    }
+
+    if (
+      parsedUpdatedFrom !== undefined &&
+      parsedUpdatedTo !== undefined &&
+      parsedUpdatedFrom > parsedUpdatedTo
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: 'updated_from não pode ser maior que updated_to',
+      });
+    }
+
+    if (parsedPriceMin !== undefined || parsedPriceMax !== undefined) {
+      where.price = {};
+      if (parsedPriceMin !== undefined) where.price[Sequelize.Op.gte] = parsedPriceMin;
+      if (parsedPriceMax !== undefined) where.price[Sequelize.Op.lte] = parsedPriceMax;
+    }
+
+    if (parsedClicksMin !== undefined || parsedClicksMax !== undefined) {
+      where.click_count = {};
+      if (parsedClicksMin !== undefined) where.click_count[Sequelize.Op.gte] = parsedClicksMin;
+      if (parsedClicksMax !== undefined) where.click_count[Sequelize.Op.lte] = parsedClicksMax;
+    }
+
+    if (parsedRatingMin !== undefined || parsedRatingMax !== undefined) {
+      where.rating = {};
+      if (parsedRatingMin !== undefined) where.rating[Sequelize.Op.gte] = parsedRatingMin;
+      if (parsedRatingMax !== undefined) where.rating[Sequelize.Op.lte] = parsedRatingMax;
+    }
+
+    if (parsedUpdatedFrom !== undefined || parsedUpdatedTo !== undefined) {
+      where.updated_at = {};
+      if (parsedUpdatedFrom !== undefined) where.updated_at[Sequelize.Op.gte] = parsedUpdatedFrom;
+      if (parsedUpdatedTo !== undefined) where.updated_at[Sequelize.Op.lte] = parsedUpdatedTo;
+    }
+
+    const categorySlug = categoria;
+    const categoryId = category_id ?? categoria_id;
+
+    if (categorySlug || categoryId) {
+      const categoryWhere = categorySlug ? { slug: categorySlug } : { id: categoryId };
+      const categoryRecord = await Categoria.findOne({ where: categoryWhere });
       if (categoryRecord) {
         const productsIds = await Produto.findAll({
           include: [
