@@ -51,9 +51,9 @@ const menuItems = [
   { id: 'products', label: 'Visualizar Produtos', icon: Package, to: '/admin/produtos' },
   {
     id: 'categories',
-    label: 'Cadastro de Categorias',
+    label: 'Categorias',
     icon: Tag,
-    to: '/admin/categorias/cadastrar',
+    to: '/admin/categorias',
   },
 ]
 

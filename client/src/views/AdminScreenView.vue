@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { LineChart, Plus } from 'lucide-vue-next'
 import http from '@/services/http'
 
@@ -46,71 +46,56 @@ const kpis = ref([
   },
 ])
 
-const chartData = ref([])
-const chartTotalClicks = ref('0')
+const chartData = ref([
+  { day: 'Seg', clicks: 0 },
+  { day: 'Ter', clicks: 0 },
+  { day: 'Qua', clicks: 0 },
+  { day: 'Qui', clicks: 0 },
+  { day: 'Sex', clicks: 0 },
+  { day: 'Sáb', clicks: 0 },
+  { day: 'Dom', clicks: 0 },
+])
 
 const topProducts = ref([])
-
-const recentActivity = [
-  { id: 1, action: 'Produto cadastrado', item: 'Fone Bluetooth QCY T13', time: 'Há 2 horas' },
-  { id: 2, action: 'Categoria criada', item: 'Eletrônicos', time: 'Há 5 horas' },
-  { id: 3, action: 'Produto editado', item: 'Camiseta Dry Fit Nike', time: 'Há 1 dia' },
-  { id: 4, action: 'Produto cadastrado', item: 'Cadeira Gamer Thunder X3', time: 'Há 2 dias' },
-  { id: 5, action: 'Categoria criada', item: 'Móveis', time: 'Há 3 dias' },
-]
+const recentActivity = ref([])
+const totalClicksFormatted = ref('0')
 
 function formatInt(value) {
   return Number(value || 0).toLocaleString('pt-BR')
 }
 
-async function fetchTotalClicks() {
-  let page = 1
-  let totalPages = 1
-  let totalClicks = 0
-  const limit = 100
-  let safeGuard = 0
+// Utilitário para formatar tempo relativo (Ex: "Há 2 horas")
+function getRelativeTime(dateString) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
 
-  while (page <= totalPages && safeGuard < 100) {
-    const { data } = await http.get('/produtos', {
-      params: { page, limit, order: 'id', direction: 'ASC' },
-    })
-
-    const rows = data?.data || []
-    totalPages = data?.pagination?.totalPages || 1
-    totalClicks += rows.reduce((acc, product) => acc + Number(product.click_count || 0), 0)
-    page += 1
-    safeGuard += 1
-  }
-
-  return totalClicks
+  if (diffInSeconds < 60) return 'Agora mesmo'
+  if (diffInSeconds < 3600) return `Há ${Math.floor(diffInSeconds / 60)} min`
+  if (diffInSeconds < 86400) return `Há ${Math.floor(diffInSeconds / 3600)} horas`
+  return `Há ${Math.floor(diffInSeconds / 86400)} dias`
 }
 
 async function loadDashboardData() {
   try {
-    const [productsResponse, categoriesResponse, topProductsResponse, clicksResponse] = await Promise.all([
-      http.get('/produtos', { params: { page: 1, limit: 1 } }),
-      http.get('/categorias'),
-      http.get('/produtos', {
-        params: { page: 1, limit: 5, order: 'click_count', direction: 'DESC' },
-      }),
-      http.get('/dashboard/clicks'),
-    ])
+    const { data } = await http.get('/dashboard', {
+      params: { period: selectedPeriod.value },
+    })
 
-    const totalProducts = productsResponse?.data?.pagination?.total || 0
-    const totalCategories = Array.isArray(categoriesResponse?.data?.data)
-      ? categoriesResponse.data.data.length
-      : 0
-    const totalClicks = await fetchTotalClicks()
+    if (!data?.data) {
+      throw new Error('Resposta inválida do endpoint /dashboard')
+    }
+
+    const stats = data.data
 
     kpis.value = kpis.value.map((kpi) => {
-      if (kpi.id === 'products') return { ...kpi, value: formatInt(totalProducts) }
-      if (kpi.id === 'categories') return { ...kpi, value: formatInt(totalCategories) }
-      if (kpi.id === 'clicks') return { ...kpi, value: formatInt(totalClicks) }
+      if (kpi.id === 'products') return { ...kpi, value: formatInt(stats.kpis?.products) }
+      if (kpi.id === 'categories') return { ...kpi, value: formatInt(stats.kpis?.categories) }
+      if (kpi.id === 'clicks') return { ...kpi, value: formatInt(stats.kpis?.clicks) }
       return kpi
     })
 
-    const rows = topProductsResponse?.data?.data || []
-    topProducts.value = rows.map((product) => ({
+    topProducts.value = (stats.topProducts || []).map((product) => ({
       id: product.id,
       name: product.title,
       category: product.categories?.[0]?.name || 'Sem categoria',
@@ -118,13 +103,24 @@ async function loadDashboardData() {
       rating: Number(product.rating || 0),
     }))
 
-    // Alimenta o gráfico com dados reais
-    chartData.value = clicksResponse?.data?.data || []
-    chartTotalClicks.value = formatInt(clicksResponse?.data?.totalClicks || 0)
+    recentActivity.value = (stats.recentActivity || []).map((activity) => ({
+      ...activity,
+      time: getRelativeTime(activity.time),
+    }))
+
+    if (Array.isArray(stats.chartData) && stats.chartData.length > 0) {
+      chartData.value = stats.chartData
+    }
+
+    totalClicksFormatted.value = formatInt(stats.kpis?.clicks)
   } catch (error) {
     console.error('Erro ao carregar dashboard:', error?.message || error)
   }
 }
+
+watch(selectedPeriod, () => {
+  loadDashboardData()
+})
 
 onMounted(loadDashboardData)
 </script>
@@ -163,7 +159,7 @@ onMounted(loadDashboardData)
 
     <!-- ──── Clicks Chart ──── -->
     <section class="mb-8">
-      <ClicksChart :data="chartData" :totalClicks="chartTotalClicks" />
+      <ClicksChart :data="chartData" :totalClicks="totalClicksFormatted" />
     </section>
 
     <!-- ──── Top Produtos + Atividade Recente ──── -->

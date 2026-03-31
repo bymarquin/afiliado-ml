@@ -11,6 +11,7 @@ const router = express.Router();
 
 // Registra todas as rotas da API
 // IMPORTANTE: Rotas específicas devem vir antes das rotas com parâmetros (:id)
+router.use("/dashboard", dashboardRoutes);
 router.use("/scrape", scrapingRoutes);
 router.use("/scraping", scrapingRoutes);
 router.use("/products", produtosScrapingRoutes);

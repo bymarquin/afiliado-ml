@@ -108,6 +108,7 @@ export async function scrapeAndCreateProduto(req, res) {
     );
     const status = req.body.status ?? 'active';
     const featured = parseBoolean(req.body.featured ?? req.body.destaque, false);
+    const categoryIds = req.body.category_ids ?? req.body.categoria_ids ?? [];
 
     if (!title || price === null || !productUrl) {
       return res.status(400).json({
@@ -121,6 +122,14 @@ export async function scrapeAndCreateProduto(req, res) {
       return res.status(400).json({
         success: false,
         error: 'Status inválido',
+      });
+    }
+
+    if (!Array.isArray(categoryIds)) {
+      return res.status(400).json({
+        success: false,
+        error: 'category_ids inválido',
+        message: 'category_ids deve ser um array de IDs',
       });
     }
 
@@ -138,6 +147,12 @@ export async function scrapeAndCreateProduto(req, res) {
       status,
       featured,
     });
+
+    if (categoryIds.length > 0) {
+      const { Categoria } = await import('../models/index.js');
+      const categories = await Categoria.findAll({ where: { id: categoryIds } });
+      await novoProduto.addCategories(categories);
+    }
 
     res.status(201).json({
       success: true,
