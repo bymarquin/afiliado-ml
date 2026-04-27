@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 
+api/config/config.json
+
 # Environment variables
 .env
 .env.local
