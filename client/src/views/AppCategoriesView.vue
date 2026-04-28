@@ -71,7 +71,7 @@ function statusLabel(isActive) {
 }
 
 function editCategory(id) {
-  router.push(`/admin/categorias/editar/${id}`)
+  router.push(`/app/categorias/editar/${id}`)
 }
 
 function toggleGroup(groupId) {
@@ -142,7 +142,7 @@ watch(
 
     <template #header-actions>
       <div class="flex items-center gap-2">
-        <BaseButton variant="primary" size="sm" class="gap-2" to="/admin/categorias/cadastrar">
+        <BaseButton variant="primary" size="sm" class="gap-2" to="/app/categorias/cadastrar">
           <Plus class="w-4 h-4" />
           Cadastrar Categoria
         </BaseButton>
@@ -172,7 +172,7 @@ watch(
       <div v-else-if="!categories.length" class="py-12 flex flex-col items-center justify-center gap-3">
         <FolderTree class="w-12 h-12 text-gray-300 dark:text-neutral-600" />
         <p class="text-sm text-gray-500 dark:text-neutral-400">Nenhuma categoria encontrada.</p>
-        <BaseButton variant="primary" size="sm" to="/admin/categorias/cadastrar" class="mt-2">
+        <BaseButton variant="primary" size="sm" to="/app/categorias/cadastrar" class="mt-2">
           Cadastrar a primeira
         </BaseButton>
       </div>
@@ -306,3 +306,6 @@ watch(
     </section>
   </AdminLayout>
 </template>
+
+
+

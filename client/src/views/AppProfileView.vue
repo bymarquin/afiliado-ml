@@ -62,7 +62,7 @@ async function refreshProfile() {
 
 function logout() {
   authStore.logout()
-  router.push('/admin/login')
+  router.push('/auth/login')
 }
 
 onMounted(refreshProfile)
@@ -145,3 +145,6 @@ onMounted(refreshProfile)
     </section>
   </AdminLayout>
 </template>
+
+
+

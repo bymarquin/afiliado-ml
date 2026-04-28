@@ -202,7 +202,7 @@ async function submitForm() {
     
     // Redirect back to list after short delay
     setTimeout(() => {
-      router.push('/admin/categorias')
+      router.push('/app/categorias')
     }, 1500)
   } catch (error) {
     errorMessage.value =
@@ -229,7 +229,7 @@ async function submitForm() {
     </template>
 
     <template #header-actions>
-      <BaseButton variant="outline" size="sm" class="gap-2" to="/admin/categorias">
+      <BaseButton variant="outline" size="sm" class="gap-2" to="/app/categorias">
         <ArrowLeft class="w-4 h-4" />
         Voltar para Categorias
       </BaseButton>
@@ -382,3 +382,6 @@ async function submitForm() {
     </section>
   </AdminLayout>
 </template>
+
+
+

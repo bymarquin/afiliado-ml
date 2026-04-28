@@ -23,3 +23,4 @@ const isDark = useDark()
     <AppFooter v-if="!hideLayout" />
   </div>
 </template>
+

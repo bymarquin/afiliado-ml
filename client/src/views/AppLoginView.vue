@@ -28,7 +28,7 @@ async function submitLogin() {
   try {
     await authStore.login(email.value, password.value)
 
-    const redirectTo = route.query.redirect || '/admin'
+    const redirectTo = route.query.redirect || '/app'
     await router.replace(String(redirectTo))
   } catch (error) {
     errorMessage.value =
@@ -126,3 +126,4 @@ async function submitLogin() {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 </style>
+

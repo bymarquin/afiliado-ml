@@ -11,7 +11,7 @@ export function useNavigation() {
         { label: 'Início', href: '#hero', sectionId: 'hero' },
         { label: 'Benefícios', href: '#benefits', sectionId: 'benefits' },
         { label: 'Categorias', href: '#categories', sectionId: 'categories' },
-        { label: 'Produtos', href: '#products', sectionId: 'products' },
+        { label: 'Produtos', href: '/produtos', sectionId: 'products' },
         { label: 'Depoimentos', href: '#testimonials', sectionId: 'testimonials' }
     ]
 
@@ -27,3 +27,4 @@ export function useNavigation() {
         supportLinks
     }
 }
+

@@ -47,13 +47,13 @@ const profileInitials = computed(() => {
 })
 
 const menuItems = [
-  { id: 'home', label: 'Dashboard', icon: Home, to: '/admin' },
-  { id: 'products', label: 'Visualizar Produtos', icon: Package, to: '/admin/produtos' },
+  { id: 'home', label: 'Dashboard', icon: Home, to: '/app' },
+  { id: 'products', label: 'Visualizar Produtos', icon: Package, to: '/app/produtos' },
   {
     id: 'categories',
     label: 'Categorias',
     icon: Tag,
-    to: '/admin/categorias',
+    to: '/app/categorias',
   },
 ]
 
@@ -83,13 +83,13 @@ function handleLogout() {
   authStore.logout()
   isProfileMenuOpen.value = false
   emit('update:isMobileMenuOpen', false)
-  router.push('/admin/login')
+  router.push('/auth/login')
 }
 
 function goToProfile() {
   isProfileMenuOpen.value = false
   emit('update:isMobileMenuOpen', false)
-  router.push('/admin/perfil')
+  router.push('/app/perfil')
 }
 
 function toggleDarkMode() {
@@ -293,3 +293,4 @@ function toggleDarkMode() {
   pointer-events: none;
 }
 </style>
+

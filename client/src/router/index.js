@@ -8,9 +8,17 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
-    } else {
-      return { top: 0 }
-  }
+    }
+
+    if (to.hash) {
+      return {
+        el: to.hash,
+        top: 80,
+        behavior: 'smooth',
+      }
+    }
+
+    return { top: 0 }
   },
 
   routes: [
@@ -35,57 +43,57 @@ const router = createRouter({
       component: () => import('../views/CategoriesView.vue'),
     },
     {
-      path: '/admin/login',
-      name: 'AdminLogin',
-      component: () => import('../views/AdminLoginView.vue'),
+      path: '/auth/login',
+      name: 'AppLogin',
+      component: () => import('../views/AppLoginView.vue'),
       meta: { hideLayout: true, public: true },
     },
     {
-      path: '/admin',
-      name: 'AdminScreen',
-      component: () => import('../views/AdminScreenView.vue'),
+      path: '/app',
+      name: 'AppScreen',
+      component: () => import('../views/AppScreenView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/produtos',
-      name: 'AdminProducts',
-      component: () => import('../views/AdminProductsView.vue'),
+      path: '/app/produtos',
+      name: 'AppProducts',
+      component: () => import('../views/AppProductsView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/produtos/cadastrar',
-      name: 'AdminProductCreate',
-      component: () => import('../views/AdminProductCreateView.vue'),
+      path: '/app/produtos/cadastrar',
+      name: 'AppProductCreate',
+      component: () => import('../views/AppProductCreateView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/produtos/editar/:id',
-      name: 'AdminProductEdit',
-      component: () => import('../views/AdminProductEditView.vue'),
+      path: '/app/produtos/editar/:id',
+      name: 'AppProductEdit',
+      component: () => import('../views/AppProductEditView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/categorias',
-      name: 'AdminCategories',
-      component: () => import('../views/AdminCategoriesView.vue'),
+      path: '/app/categorias',
+      name: 'AppCategories',
+      component: () => import('../views/AppCategoriesView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/categorias/cadastrar',
-      name: 'AdminCategoryCreate',
-      component: () => import('../views/AdminCategoryCreateView.vue'),
+      path: '/app/categorias/cadastrar',
+      name: 'AppCategoryCreate',
+      component: () => import('../views/AppCategoryCreateView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/categorias/editar/:id',
-      name: 'AdminCategoryEdit',
-      component: () => import('../views/AdminCategoryEditView.vue'),
+      path: '/app/categorias/editar/:id',
+      name: 'AppCategoryEdit',
+      component: () => import('../views/AppCategoryEditView.vue'),
       meta: { hideLayout: true },
     },
     {
-      path: '/admin/perfil',
-      name: 'AdminProfile',
-      component: () => import('../views/AdminProfileView.vue'),
+      path: '/app/perfil',
+      name: 'AppProfile',
+      component: () => import('../views/AppProfileView.vue'),
       meta: { hideLayout: true },
     },
   ]
@@ -93,23 +101,24 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore(pinia)
-  const isAdminRoute = to.path.startsWith('/admin')
+  const isAppRoute = to.path.startsWith('/app')
+  const isAuthLoginRoute = to.path === '/auth/login'
   const isPublic = to.meta?.public === true
 
-  if (!isAdminRoute) return true
+  if (!isAppRoute && !isAuthLoginRoute) return true
 
   await authStore.ensureSession()
 
-  if (to.path === '/admin/login') {
+  if (isAuthLoginRoute) {
     if (authStore.isAuthenticated) {
-      return '/admin'
+      return '/app'
     }
     return true
   }
 
   if (!isPublic && !authStore.isAuthenticated) {
     return {
-      path: '/admin/login',
+      path: '/auth/login',
       query: { redirect: to.fullPath },
     }
   }
@@ -118,3 +127,6 @@ router.beforeEach(async (to) => {
 })
 
 export default router
+
+
+

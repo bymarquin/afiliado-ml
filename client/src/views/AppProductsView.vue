@@ -348,7 +348,7 @@ onUnmounted(() => {
 
     <template #header-actions>
       <div class="flex items-center gap-2">
-        <BaseButton variant="primary" size="sm" class="gap-2" to="/admin/produtos/cadastrar">
+        <BaseButton variant="primary" size="sm" class="gap-2" to="/app/produtos/cadastrar">
           <Plus class="w-4 h-4" />
           Cadastrar Produto
         </BaseButton>
@@ -675,7 +675,7 @@ onUnmounted(() => {
               <td class="px-4 py-3.5">
                 <div class="flex items-center justify-end gap-1">
                   <router-link
-                    :to="`/admin/produtos/editar/${product.id}`"
+                    :to="`/app/produtos/editar/${product.id}`"
                     class="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
                     title="Editar produto"
                   >
@@ -723,3 +723,6 @@ onUnmounted(() => {
     </section>
   </AdminLayout>
 </template>
+
+
+

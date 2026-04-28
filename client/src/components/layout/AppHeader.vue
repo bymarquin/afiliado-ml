@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import BaseContainer from '@/components/ui/BaseContainer.vue'
 import { useNavigation, SECTION_IDS } from '@/composables/useNavigation'
 import { useMobileMenu } from '@/composables/useMobileMenu'
@@ -12,6 +13,8 @@ import { useAuthStore } from '@/stores/auth'
 const { navLinks } = useNavigation()
 const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu, close: closeMobileMenu } = useMobileMenu()
 const { activeSection } = useActiveSection(SECTION_IDS)
+const route = useRoute()
+const router = useRouter()
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const scrollStore = useScrollStore()
@@ -58,8 +61,32 @@ onUnmounted(() => {
  * Scroll suave até a seção usando Lenis (se disponível) ou fallback nativo.
  * Fecha o menu mobile automaticamente após o clique.
  */
-const scrollToSection = (event, sectionId) => {
+const isProductsLink = (sectionId) => sectionId === 'products'
+
+const isLinkActive = (sectionId) => {
+    if (isProductsLink(sectionId)) {
+        return route.path === '/produtos' || (route.path === '/' && activeSection.value === sectionId)
+    }
+
+    return route.path === '/' && activeSection.value === sectionId
+}
+
+const handleNavClick = async (event, sectionId) => {
     event.preventDefault()
+
+    if (isProductsLink(sectionId)) {
+        closeMobileMenu()
+        if (route.path !== '/produtos') {
+            await router.push('/produtos')
+        }
+        return
+    }
+
+    if (route.path !== '/') {
+        closeMobileMenu()
+        await router.push({ path: '/', hash: `#${sectionId}` })
+        return
+    }
 
     const el = document.getElementById(sectionId)
     if (!el) return
@@ -72,6 +99,24 @@ const scrollToSection = (event, sectionId) => {
 
     closeMobileMenu()
 }
+
+const handleLogoClick = async (event) => {
+    event.preventDefault()
+
+    closeMobileMenu()
+
+    if (route.path === '/produtos') {
+        await router.push({ path: '/', hash: '#products' })
+        return
+    }
+
+    if (route.path === '/categorias') {
+        await router.push({ path: '/', hash: '#categories' })
+        return
+    }
+
+    await router.push('/')
+}
 </script>
 
 <template>
@@ -79,7 +124,7 @@ const scrollToSection = (event, sectionId) => {
         <BaseContainer>
             <nav class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <a href="/" class="flex items-center gap-2 text-xl font-bold text-text-main">
+                <a href="/" @click="handleLogoClick" class="flex items-center gap-2 text-xl font-bold text-text-main">
                     <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="32" height="32" rx="8" class="fill-neutral-950 dark:fill-primary" />
                         <path d="M8 16L16 8L24 16L16 24L8 16Z" fill="#F9D52C" />
@@ -90,28 +135,19 @@ const scrollToSection = (event, sectionId) => {
                 <!-- Desktop Navigation -->
                 <ul class="hidden md:flex items-center gap-8">
                     <li v-for="link in navLinks" :key="link.sectionId">
-                        <a :href="link.href" @click="scrollToSection($event, link.sectionId)" class="nav-link text-sm font-medium transition-colors relative" :class="activeSection === link.sectionId
+                            <a :href="link.href" @click="handleNavClick($event, link.sectionId)" class="nav-link text-sm font-medium transition-colors relative" :class="isLinkActive(link.sectionId)
                             ? 'text-primary-text'
                             : 'text-text-muted hover:text-text-main'
                             ">
                             {{ link.label }}
                             <!-- Underline animado -->
-                            <span class="absolute -bottom-1 left-0 h-0.5 bg-primary rounded-full transition-all duration-300" :class="activeSection === link.sectionId ? 'w-full' : 'w-0'"></span>
+                            <span class="absolute -bottom-1 left-0 h-0.5 bg-primary rounded-full transition-all duration-300" :class="isLinkActive(link.sectionId) ? 'w-full' : 'w-0'"></span>
                         </a>
                     </li>
                 </ul>
 
                 <!-- Actions -->
                 <div class="flex items-center gap-2 sm:gap-4">
-                    <!-- Search -->
-                    <button class="p-2 text-text-muted hover:text-text-main hover:bg-surface-hover rounded-lg transition-colors"
-                        aria-label="Buscar produtos">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-
                     <button
                         class="p-2 text-text-muted hover:text-text-main hover:bg-surface-hover rounded-lg transition-colors"
                         aria-label="Alternar tema"
@@ -173,7 +209,7 @@ const scrollToSection = (event, sectionId) => {
                                 <div class="p-1.5">
                                     <RouterLink
                                         v-if="authStore.isAuthenticated"
-                                        to="/admin"
+                                        to="/app"
                                         class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-muted hover:text-text-main hover:bg-surface-hover transition-all duration-200"
                                         @click="isUserMenuOpen = false"
                                     >
@@ -188,7 +224,7 @@ const scrollToSection = (event, sectionId) => {
 
                                     <RouterLink
                                         v-else
-                                        to="/admin"
+                                        to="/app"
                                         class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-muted hover:text-text-main hover:bg-surface-hover transition-all duration-200"
                                         @click="isUserMenuOpen = false"
                                     >
@@ -244,9 +280,9 @@ const scrollToSection = (event, sectionId) => {
                 <div v-if="isMobileMenuOpen" class="md:hidden pb-4">
                     <ul class="flex flex-col gap-2">
                         <li v-for="link in navLinks" :key="link.sectionId">
-                            <a :href="link.href" @click="scrollToSection($event, link.sectionId)"
+                            <a :href="link.href" @click="handleNavClick($event, link.sectionId)"
                                 class="block py-2 px-3 text-sm font-medium rounded-lg transition-colors"
-                                :class="activeSection === link.sectionId
+                                :class="isLinkActive(link.sectionId)
                                     ? 'text-primary-text bg-primary/10'
                                     : 'text-text-muted hover:text-text-main hover:bg-surface-hover'
                                 ">
@@ -259,3 +295,4 @@ const scrollToSection = (event, sectionId) => {
         </BaseContainer>
     </header>
 </template>
+

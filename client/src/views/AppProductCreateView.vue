@@ -300,7 +300,7 @@ onBeforeUnmount(() => {
     </template>
 
     <template #header-actions>
-      <BaseButton variant="outline" size="sm" class="gap-2" to="/admin/produtos">
+      <BaseButton variant="outline" size="sm" class="gap-2" to="/app/produtos">
         <ArrowLeft class="w-4 h-4" />
         Voltar para lista
       </BaseButton>
@@ -584,3 +584,6 @@ onBeforeUnmount(() => {
   color: #737373;
 }
 </style>
+
+
+
