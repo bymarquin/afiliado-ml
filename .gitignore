@@ -20,4 +20,4 @@ Desktop.ini
 .idea/
 
 # Local API config
-api/config/config.json
+# api/config/config.json
