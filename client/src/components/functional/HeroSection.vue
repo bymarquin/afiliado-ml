@@ -117,14 +117,14 @@ const handleImageError = (e) => {
           <div
             class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto transform translate-y-4 opacity-0 mb-10">
             <ClickSparkWrapper sparkColor="#2563eb" :sparkRadius="50" :sparkCount="12">
-              <BaseButton variant="primary" size="lg"
+              <BaseButton :to="{ path: '/', hash: '#products' }" variant="primary" size="lg"
                 class="w-full sm:w-auto font-medium whitespace-nowrap shadow-xl shadow-primary/10">
                 Começar a Comprar
                 <ArrowRight class="w-5 h-5 ml-2" />
               </BaseButton>
             </ClickSparkWrapper>
             <ClickSparkWrapper sparkColor="#6b7280" :sparkRadius="40" :sparkCount="8">
-              <BaseButton variant="outline" size="lg"
+              <BaseButton :to="{ path: '/', hash: '#benefits' }" variant="outline" size="lg"
                 class="w-full sm:w-auto whitespace-nowrap">
                 <Play class="w-4 h-4 mr-2 fill-current" />
                 Como funciona

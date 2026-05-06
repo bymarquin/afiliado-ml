@@ -4,6 +4,8 @@ import { Mail, MapPin } from 'lucide-vue-next'
 import { useNavigation } from '@/composables/useNavigation'
 import { useSocialLinks } from '@/composables/useSocialLinks'
 import { useScrollStore } from '@/stores/scroll'
+import logoSplitBlack from '@/assets/logo_split_black.svg'
+import logoSplitWhite from '@/assets/logo_split_white.svg'
 
 const currentYear = new Date().getFullYear()
 
@@ -43,12 +45,17 @@ const scrollToSection = (event, sectionId) => {
           <!-- Brand Column -->
           <div class="lg:col-span-1">
             <!-- Logo -->
-            <a href="/" class="inline-flex items-center gap-2 text-xl font-bold text-text-main mb-5">
-              <svg class="w-9 h-9" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="8" class="fill-neutral-950 dark:fill-primary" />
-                <path d="M8 16L16 8L24 16L16 24L8 16Z" fill="#F9D52C" />
-              </svg>
-              <span>Afiliado</span>
+            <a href="/" class="inline-flex items-center mb-5">
+              <img
+                :src="logoSplitBlack"
+                alt="Afiliado ML"
+                class="h-10 w-auto max-w-[180px] dark:hidden"
+              />
+              <img
+                :src="logoSplitWhite"
+                alt="Afiliado ML"
+                class="hidden dark:block h-10 w-auto max-w-[180px]"
+              />
             </a>
 
             <!-- Description -->

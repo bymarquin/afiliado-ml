@@ -16,6 +16,10 @@ import {
 } from 'lucide-vue-next'
 import { useDark, useToggle } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
+import logoSplitBlack from '@/assets/logo_split_black.svg'
+import logoSplitWhite from '@/assets/logo_split_white.svg'
+import logoPBlack from '@/assets/logo_P_black.svg'
+import logoPWhite from '@/assets/logo_P_white.svg'
 
 const props = defineProps({
   isMobileMenuOpen: {
@@ -114,11 +118,20 @@ function toggleDarkMode() {
           : 'items-center justify-between',
       ]"
     >
-      <div
-        class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/25"
-      >
-        <span class="text-white font-bold text-sm">AF</span>
-      </div>
+      <RouterLink to="/app" class="inline-flex items-center">
+        <img
+          :src="
+            props.isCollapsed
+              ? (isDarkMode ? logoPWhite : logoPBlack)
+              : (isDarkMode ? logoSplitWhite : logoSplitBlack)
+          "
+          alt="Afiliado ML"
+          :class="[
+            'w-auto transition-all duration-300',
+            props.isCollapsed ? 'h-9 max-w-[40px]' : 'h-9 max-w-[140px]',
+          ]"
+        />
+      </RouterLink>
 
       <button
         class="hidden lg:inline-flex items-center justify-center w-9 h-9 rounded-xl text-gray-500 dark:text-neutral-400 hover:text-gray-950 dark:hover:text-neutral-100 hover:bg-gray-200/60 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"

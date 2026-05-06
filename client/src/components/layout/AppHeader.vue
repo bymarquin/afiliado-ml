@@ -9,6 +9,8 @@ import { useDark, useToggle } from '@vueuse/core'
 import { Moon, Sun, User, ShieldCheck, LogOut, LayoutDashboard } from 'lucide-vue-next'
 import { useScrollStore } from '@/stores/scroll'
 import { useAuthStore } from '@/stores/auth'
+import logoLinearBlack from '@/assets/logo_linear_black.svg'
+import logoLinearWhite from '@/assets/logo_linear_white.svg'
 
 const { navLinks } = useNavigation()
 const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu, close: closeMobileMenu } = useMobileMenu()
@@ -124,12 +126,12 @@ const handleLogoClick = async (event) => {
         <BaseContainer>
             <nav class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <a href="/" @click="handleLogoClick" class="flex items-center gap-2 text-xl font-bold text-text-main">
-                    <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="32" height="32" rx="8" class="fill-neutral-950 dark:fill-primary" />
-                        <path d="M8 16L16 8L24 16L16 24L8 16Z" fill="#F9D52C" />
-                    </svg>
-                    <span class="hidden sm:inline">Afiliado</span>
+                <a href="/" @click="handleLogoClick" class="inline-flex items-center">
+                    <img
+                        :src="isDark ? logoLinearWhite : logoLinearBlack"
+                        alt="Afiliado ML"
+                        class="h-6 sm:h-7 md:h-8 w-auto max-w-[210px] sm:max-w-[250px]"
+                    />
                 </a>
 
                 <!-- Desktop Navigation -->
