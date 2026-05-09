@@ -36,11 +36,26 @@ const router = createRouter({
       path: '/produtos',
       name: 'CatalogView',
       component: () => import('../views/TopClickedProductsView.vue'),
-    },
+    },    
     {
       path: '/categorias',
       name: 'CategoriesView',
       component: () => import('../views/CategoriesView.vue'),
+    },
+    {
+      path: '/faq',
+      name: 'FaqView',
+      component: () => import('../views/FaqView.vue'),
+    },
+    {
+      path: '/politica-de-privacidade',
+      name: 'PrivacyPolicyView',
+      component: () => import('../views/PrivacyPolicyView.vue'),
+    },
+    {
+      path: '/termos-de-servico',
+      name: 'TermsOfServiceView',
+      component: () => import('../views/TermsOfServiceView.vue'),
     },
     {
       path: '/auth/login',
@@ -127,6 +142,4 @@ router.beforeEach(async (to) => {
 })
 
 export default router
-
-
 
