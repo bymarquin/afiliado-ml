@@ -6,7 +6,7 @@ import { useNavigation, SECTION_IDS } from '@/composables/useNavigation'
 import { useMobileMenu } from '@/composables/useMobileMenu'
 import { useActiveSection } from '@/composables/useActiveSection'
 import { useDark, useToggle } from '@vueuse/core'
-import { Moon, Sun, User, ShieldCheck, LogOut, LayoutDashboard } from 'lucide-vue-next'
+import { Moon, Sun, ShieldCheck, LogOut, LayoutDashboard } from 'lucide-vue-next'
 import { useScrollStore } from '@/stores/scroll'
 import { useAuthStore } from '@/stores/auth'
 import logoLinearBlack from '@/assets/logo_linear_black.svg'
@@ -161,20 +161,14 @@ const handleLogoClick = async (event) => {
 
                     <!-- User Dropdown -->
                     <div class="relative" ref="userMenuRef">
-                        <!-- Trigger: avatar quando autenticado, ícone quando guest -->
+                        <!-- Trigger sem ícone de perfil -->
                         <button
-                            class="flex items-center p-1.5 rounded-lg transition-colors hover:bg-surface-hover"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-surface-hover"
                             :class="authStore.isAuthenticated ? 'text-primary-text' : 'text-text-muted hover:text-text-main'"
                             aria-label="Minha conta"
                             @click="toggleUserMenu"
                         >
-                            <div v-if="authStore.isAuthenticated"
-                                class="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center transition-all duration-200"
-                                :class="isUserMenuOpen ? 'ring-2 ring-primary/30 ring-offset-1 ring-offset-surface' : ''"
-                            >
-                                <span class="text-[10px] font-bold text-primary-text leading-none">{{ userInitials }}</span>
-                            </div>
-                            <User v-else class="w-5 h-5" />
+                            {{ authStore.isAuthenticated ? 'Conta' : 'Acesso' }}
                         </button>
 
                         <Transition
@@ -297,4 +291,3 @@ const handleLogoClick = async (event) => {
         </BaseContainer>
     </header>
 </template>
-

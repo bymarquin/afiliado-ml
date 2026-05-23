@@ -26,11 +26,13 @@ export function useProducts(options = {}) {
             // Mapeia os dados da API (snake_case) para o formato esperado pela UI (camelCase)
             products.value = (data?.data || []).map(p => ({
                 id: p.id,
+                uuid: p.uuid || p.meli_id || String(p.id),
                 name: p.title,
                 price: Number(p.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
                 originalPrice: p.original_price ? Number(p.original_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : null,
                 image: p.image_url,
                 variant: p.categories?.[0]?.name || 'Geral',
+                categorySlug: p.categories?.[0]?.slug || 'geral',
                 rating: Number(p.rating || 0),
                 reviewCount: p.rating_count || 0,
                 clickCount: p.click_count || 0

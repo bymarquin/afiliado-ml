@@ -1,0 +1,46 @@
+version: "3.7"
+
+services:
+  afiliado:
+    image: ${REGISTRY:-}afiliado-ml:${IMAGE_TAG:-latest}
+    environment:
+      NODE_ENV: production
+      PORT: "3008"
+      DATABASE_URL: postgres://${POSTGRES_USER:-afiliado}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-postgres}:5432/${POSTGRES_DB:-afiliado_ml}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@${REDIS_HOST:-redis}:6379
+      CLIENT_URL: https://${APP_DOMAIN}
+      FRONTEND_URL: https://${APP_DOMAIN}
+      API_URL: https://${APP_DOMAIN}/api
+      PUBLIC_API_URL: https://${APP_DOMAIN}/api
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      REFRESH_TOKEN_EXPIRES_DAYS: ${REFRESH_TOKEN_EXPIRES_DAYS:-30}
+      TLS_ENABLED: "false"
+      BEHIND_NGINX_PROXY: "true"
+      BUSINESS_TIMEZONE: America/Sao_Paulo
+      PRICE_UPDATE_INTERVAL: ${PRICE_UPDATE_INTERVAL:-21600000}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@example.com}
+    networks:
+      - network_swarm_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=network_swarm_public
+        - traefik.http.routers.afiliado.rule=Host(`${APP_DOMAIN}`)
+        - traefik.http.routers.afiliado.entrypoints=websecure
+        - traefik.http.routers.afiliado.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.afiliado.service=afiliado
+        - traefik.http.services.afiliado.loadbalancer.server.port=3008
+
+networks:
+  network_swarm_public:
+    external: true
+    name: network_swarm_public
