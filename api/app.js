@@ -30,7 +30,7 @@ const publicDir = join(__appDir, "public");
 if (existsSync(publicDir)) {
   app.use(express.static(publicDir));
   // Fallback para Vue Router (HTML5 history mode)
-  app.get("*", (req, res) => {
+  app.get("*all", (req, res) => {
     res.sendFile(join(publicDir, "index.html"));
   });
 }

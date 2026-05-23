@@ -2,7 +2,8 @@ version: "3.7"
 
 services:
   afiliado:
-    image: ${REGISTRY:-}afiliado-ml:${IMAGE_TAG:-latest}
+    image: afiliado-ml/cliente:${CLIENT_TAG}
+    afiliado-ml/cliente:dalberson
     environment:
       NODE_ENV: production
       PORT: "3008"
