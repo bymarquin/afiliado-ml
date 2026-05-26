@@ -16,8 +16,8 @@ import {
 } from 'lucide-vue-next'
 import { useDark, useToggle } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
-import logoSplitBlack from '@/assets/logo_split_black.svg'
-import logoSplitWhite from '@/assets/logo_split_white.svg'
+import logoSplitBlack from '@/assets/split-black.svg'
+import logoSplitWhite from '@/assets/split-white.svg'
 import logoPBlack from '@/assets/logo_P_black.svg'
 import logoPWhite from '@/assets/logo_P_white.svg'
 
@@ -128,7 +128,7 @@ function toggleDarkMode() {
           alt="Afiliado ML"
           :class="[
             'w-auto transition-all duration-300',
-            props.isCollapsed ? 'h-9 max-w-[40px]' : 'h-9 max-w-[140px]',
+            props.isCollapsed ? 'h-10 max-w-[46px]' : 'h-12 max-w-[190px]',
           ]"
         />
       </RouterLink>
@@ -306,4 +306,6 @@ function toggleDarkMode() {
   pointer-events: none;
 }
 </style>
+
+
 

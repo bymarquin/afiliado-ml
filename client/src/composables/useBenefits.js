@@ -1,5 +1,5 @@
 /**
- * useBenefits - Composable para dados de beneficios
+ * useBenefits - Composable para dados de benefícios
  * Usado em: BenefitsSection
  */
 
@@ -8,23 +8,25 @@ import { Truck, Star, ShieldCheck, Lock } from 'lucide-vue-next'
 const benefits = [
   {
     icon: 'truck',
-    title: 'Frete Gratis e Devolucoes',
-    description: 'Frete gratis em compras acima de R$ 200. Devolucao facil em ate 30 dias.'
+    title: 'Ofertas Atualizadas Todos os Dias',
+    description:
+      'Monitoramos os parceiros para destacar promoções ativas, boas avaliações e oportunidades reais de economia.'
   },
   {
     icon: 'star',
-    title: 'Avaliacao 4.8 dos Clientes',
+    title: 'Avaliação 4,8 dos Clientes',
     description: 'Junte-se a mais de 5.000 clientes satisfeitos que amam nossos produtos.'
   },
   {
     icon: 'shield',
-    title: 'Curadoria com Transparencia',
-    description: 'Selecionamos ofertas com base em relevancia, avaliacoes e custo-beneficio, com informacoes claras antes do clique.'
+    title: 'Curadoria com Transparência',
+    description:
+      'Selecionamos ofertas com base em relevância, avaliações e custo-benefício, com informações claras antes do clique.'
   },
   {
     icon: 'lock',
     title: 'Pagamentos Seguros',
-    description: 'Seus dados sao protegidos com seguranca de nivel empresarial.'
+    description: 'Seus dados são protegidos com segurança de nível empresarial.'
   }
 ]
 

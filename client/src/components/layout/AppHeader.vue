@@ -9,8 +9,8 @@ import { useDark, useToggle } from '@vueuse/core'
 import { Moon, Sun, ShieldCheck, LogOut, LayoutDashboard } from 'lucide-vue-next'
 import { useScrollStore } from '@/stores/scroll'
 import { useAuthStore } from '@/stores/auth'
-import logoLinearBlack from '@/assets/logo_linear_black.svg'
-import logoLinearWhite from '@/assets/logo_linear_white.svg'
+import logoLinearBlack from '@/assets/linear-black.svg'
+import logoLinearWhite from '@/assets/linear-white.svg'
 
 const { navLinks } = useNavigation()
 const { isOpen: isMobileMenuOpen, toggle: toggleMobileMenu, close: closeMobileMenu } = useMobileMenu()
@@ -130,7 +130,7 @@ const handleLogoClick = async (event) => {
                     <img
                         :src="isDark ? logoLinearWhite : logoLinearBlack"
                         alt="Afiliado ML"
-                        class="h-6 sm:h-7 md:h-8 w-auto max-w-[210px] sm:max-w-[250px]"
+                        class="h-[3.25rem] sm:h-[3.5rem] md:h-16 w-auto max-w-[350px] sm:max-w-[410px]"
                     />
                 </a>
 

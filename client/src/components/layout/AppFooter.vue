@@ -3,8 +3,8 @@ import BaseContainer from '@/components/ui/BaseContainer.vue'
 import { Mail, MapPin } from 'lucide-vue-next'
 import { useNavigation } from '@/composables/useNavigation'
 import { useScrollStore } from '@/stores/scroll'
-import logoSplitBlack from '@/assets/logo_split_black.svg'
-import logoSplitWhite from '@/assets/logo_split_white.svg'
+import logoSplitBlack from '@/assets/split-black.svg'
+import logoSplitWhite from '@/assets/split-white.svg'
 
 const currentYear = new Date().getFullYear()
 
@@ -49,12 +49,12 @@ const scrollToSection = (event, sectionId) => {
               <img
                 :src="logoSplitBlack"
                 alt="Click Certo"
-                class="h-10 w-auto max-w-[180px] dark:hidden"
+                class="h-16 sm:h-[4.5rem] w-auto max-w-[250px] sm:max-w-[290px] dark:hidden"
               />
               <img
                 :src="logoSplitWhite"
                 alt="Click Certo"
-                class="hidden dark:block h-10 w-auto max-w-[180px]"
+                class="hidden dark:block h-16 sm:h-[4.5rem] w-auto max-w-[250px] sm:max-w-[290px]"
               />
             </a>
 
@@ -126,3 +126,5 @@ const scrollToSection = (event, sectionId) => {
     </div>
   </footer>
 </template>
+
+
