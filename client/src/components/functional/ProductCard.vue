@@ -2,6 +2,7 @@
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ClickSparkWrapper from '@/components/ui/ClickSparkWrapper.vue'
 import { Star } from 'lucide-vue-next'
+import { computed } from 'vue'
 
 const props = defineProps({
   product: {
@@ -13,13 +14,21 @@ const props = defineProps({
 // Simular rating - em produção viria da API
 const rating = props.product.rating || 4.5
 const reviewCount = props.product.reviewCount || Math.floor(Math.random() * 100) + 20
+
+const detailsRoute = computed(() => ({
+  name: 'ProductDetails',
+  params: {
+    category: props.product.categorySlug || 'geral',
+    id: props.product.uuid || props.product.id,
+  },
+}))
 </script>
 
 <template>
   <article
     class="group flex flex-col h-full bg-surface rounded-2xl overflow-hidden border border-border-sutil shadow-md hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
     <!-- Image Container -->
-    <RouterLink :to="{ name: 'ProductDetails', params: { id: product.id } }"
+    <RouterLink :to="detailsRoute"
       class="relative aspect-square bg-surface-hover overflow-hidden cursor-pointer">
 
       <!-- Image -->
@@ -51,7 +60,7 @@ const reviewCount = props.product.reviewCount || Math.floor(Math.random() * 100)
 
       <!-- Name -->
       <h3 class="text-sm font-semibold text-text-main mb-1.5 line-clamp-2 leading-snug">
-        <RouterLink :to="{ name: 'ProductDetails', params: { id: product.id } }"
+        <RouterLink :to="detailsRoute"
           class="hover:text-primary-text transition-colors">
           {{ product.name }}
         </RouterLink>
@@ -80,7 +89,7 @@ const reviewCount = props.product.reviewCount || Math.floor(Math.random() * 100)
     <!-- CTA with Click Spark -->
     <div class="px-4 pb-4">
       <ClickSparkWrapper sparkColor="#2563eb" :sparkRadius="45" :sparkCount="10">
-        <BaseButton variant="secondary" :to="{ name: 'ProductDetails', params: { id: product.id } }"
+        <BaseButton variant="secondary" :to="detailsRoute"
           class="w-full justify-center py-3"
           size="md">
           Ver Detalhes

@@ -28,7 +28,7 @@ const router = createRouter({
       component: () => import('../views/HomePageView.vue'),
     },
     {
-      path: '/product/:id',
+      path: '/product/:category/:id',
       name: 'ProductDetails',
       component: () => import('../views/ProductDetailsView.vue'),
     },
@@ -142,4 +142,3 @@ router.beforeEach(async (to) => {
 })
 
 export default router
-
