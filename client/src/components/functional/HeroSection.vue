@@ -145,7 +145,7 @@ const handleImageError = (e) => {
                 <Star v-for="s in 5" :key="s" class="w-4 h-4 fill-current" />
               </div>
               <p class="text-xs font-medium text-text-muted">
-                <span class="font-bold text-text-main">{{ shoppersCount.toLocaleString('pt-BR') }}+</span> clientes felizes
+                <span class="font-bold text-text-main">{{ shoppersCount.toLocaleString('pt-BR') }}+</span> clientes
               </p>
             </div>
           </div>

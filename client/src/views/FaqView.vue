@@ -6,29 +6,24 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 
 const faqItems = [
   {
-    question: 'Como funcionam os links de afiliado?',
-    answer:
-      'Ao clicar em um produto, voce e redirecionado para a pagina do Mercado Livre. Se a compra for concluida, podemos receber comissao sem custo adicional para voce.',
-  },
-  {
-    question: 'Os produtos exibidos sao vendidos por voces?',
+    question: 'Os produtos exibidos são vendidos por vocês?',
     answer:
       'Nao. A vitrine apresenta ofertas de parceiros. O pagamento, frete, garantia e entrega sao processados diretamente pelo marketplace vendedor.',
   },
   {
-    question: 'Com que frequencia os precos sao atualizados?',
-    answer:
-      'As informacoes sao revisadas periodicamente, mas podem mudar rapidamente no marketplace. Recomendamos confirmar preco e disponibilidade na pagina final do produto.',
-  },
-  {
     question: 'Posso confiar nos produtos recomendados?',
     answer:
-      'Nossa curadoria prioriza itens bem avaliados, com bom custo-beneficio e relevancia para o publico. Ainda assim, vale checar reputacao do vendedor e avaliacoes recentes.',
+      'Nossa curadoria prioriza itens bem avaliados, com bom custo-benefício e relevância para o público. Ainda assim, vale checar reputação do vendedor e avaliações recentes.',
   },
   {
     question: 'Como entro em contato para suporte?',
     answer:
-      'Voce pode falar com a gente pelo e-mail de contato no rodape. Respondemos o mais rapido possivel em horario comercial.',
+      'Você pode falar com a gente pelo e-mail de contato no rodapé. Respondemos o mais rápido possível em horário comercial.',
+  },
+  {
+    question: 'Onde ocorre o pagamento pelos produtos?',
+    answer:
+      'O pagamento é processado diretamente pelo marketplace vendedor. Ao clicar no botão "Comprar Agora", você será redirecionado para a página do Mercado Livre para finalizar sua compra com segurança.',
   },
 ]
 

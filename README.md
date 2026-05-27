@@ -9,3 +9,5 @@ mais vendas e lucratividade.
 **Fluxo de Compra:**<br>
 Os usuários(finais) entram no website -> Veem os produtos cadastrados -> Clicam em *Comprar* ->
 São redirecionados para a compra do produto no próprio mercado livre
+
+**Perguntas do Faq: FaqView**<br>
