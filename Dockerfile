@@ -25,4 +25,4 @@ COPY --from=client-builder /build/client/dist ./public
 EXPOSE 3008
 ENV PORT=3008
 
-CMD ["node", "app.js"]
+CMD ["sh", "-c", "npx sequelize-cli db:migrate && node app.js"]
