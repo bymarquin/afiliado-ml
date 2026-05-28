@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseContainer from '@/components/ui/BaseContainer.vue'
 import { useNavigation, SECTION_IDS } from '@/composables/useNavigation'
 import { useMobileMenu } from '@/composables/useMobileMenu'
 import { useActiveSection } from '@/composables/useActiveSection'
 import { useDark, useToggle } from '@vueuse/core'
-import { Moon, Sun, ShieldCheck, LogOut, LayoutDashboard } from 'lucide-vue-next'
+import { Moon, Sun } from 'lucide-vue-next'
 import { useScrollStore } from '@/stores/scroll'
 import { useAuthStore } from '@/stores/auth'
 import logoLinearBlack from '@/assets/linear-black.svg'
@@ -24,40 +23,6 @@ const authStore = useAuthStore()
 
 // Hidrata estado de auth a partir do localStorage (idempotente)
 authStore.init()
-
-const isUserMenuOpen = ref(false)
-const userMenuRef = ref(null)
-
-const userInitials = computed(() => {
-    const name = authStore.user?.name?.trim() || ''
-    if (!name) return '?'
-    const parts = name.split(/\s+/).filter(Boolean)
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-})
-
-const toggleUserMenu = () => {
-    isUserMenuOpen.value = !isUserMenuOpen.value
-}
-
-const handleClickOutside = (event) => {
-    if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
-        isUserMenuOpen.value = false
-    }
-}
-
-const handleLogout = () => {
-    authStore.logout()
-    isUserMenuOpen.value = false
-}
-
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
-})
 
 /**
  * Scroll suave até a seção usando Lenis (se disponível) ou fallback nativo.
@@ -159,96 +124,7 @@ const handleLogoClick = async (event) => {
                         <Moon v-else class="w-5 h-5" />
                     </button>
 
-                    <!-- User Dropdown -->
-                    <div class="relative" ref="userMenuRef">
-                        <!-- Trigger sem ícone de perfil -->
-                        <button
-                            class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-surface-hover"
-                            :class="authStore.isAuthenticated ? 'text-primary-text' : 'text-text-muted hover:text-text-main'"
-                            aria-label="Minha conta"
-                            @click="toggleUserMenu"
-                        >
-                            {{ authStore.isAuthenticated ? 'Conta' : 'Acesso' }}
-                        </button>
 
-                        <Transition
-                            enter-active-class="transition duration-200 ease-out origin-top-right"
-                            enter-from-class="opacity-0 scale-95 -translate-y-1"
-                            enter-to-class="opacity-100 scale-100 translate-y-0"
-                            leave-active-class="transition duration-150 ease-in origin-top-right"
-                            leave-from-class="opacity-100 scale-100 translate-y-0"
-                            leave-to-class="opacity-0 scale-95 -translate-y-1"
-                        >
-                            <div
-                                v-if="isUserMenuOpen"
-                                class="absolute right-0 mt-2 w-64 bg-surface border border-border-sutil rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden z-50"
-                            >
-                                <!-- Cabeçalho: autenticado -->
-                                <div v-if="authStore.isAuthenticated" class="px-4 py-3.5 bg-surface-hover border-b border-border-sutil">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                                            <span class="text-xs font-bold text-primary-text">{{ userInitials }}</span>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <p class="text-sm font-semibold text-text-main truncate">{{ authStore.user?.name }}</p>
-                                            <p class="text-[11px] text-text-muted truncate">{{ authStore.user?.email }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Cabeçalho: guest -->
-                                <div v-else class="px-4 py-3 border-b border-border-sutil">
-                                    <p class="text-[11px] font-semibold text-text-muted uppercase tracking-widest">Minha Conta</p>
-                                </div>
-
-                                <!-- Itens de menu -->
-                                <div class="p-1.5">
-                                    <RouterLink
-                                        v-if="authStore.isAuthenticated"
-                                        to="/app"
-                                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-muted hover:text-text-main hover:bg-surface-hover transition-all duration-200"
-                                        @click="isUserMenuOpen = false"
-                                    >
-                                        <div class="w-8 h-8 rounded-lg bg-surface border border-border-sutil group-hover:bg-primary/10 group-hover:border-primary/20 flex items-center justify-center transition-all duration-200 shrink-0">
-                                            <LayoutDashboard class="w-4 h-4 group-hover:text-primary-text transition-colors duration-200" />
-                                        </div>
-                                        <div class="min-w-0">
-                                            <span class="block leading-tight">Dashboard</span>
-                                            <span class="block text-[11px] text-text-muted/70 leading-tight">Painel administrativo</span>
-                                        </div>
-                                    </RouterLink>
-
-                                    <RouterLink
-                                        v-else
-                                        to="/app"
-                                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-muted hover:text-text-main hover:bg-surface-hover transition-all duration-200"
-                                        @click="isUserMenuOpen = false"
-                                    >
-                                        <div class="w-8 h-8 rounded-lg bg-surface border border-border-sutil group-hover:bg-primary/10 group-hover:border-primary/20 flex items-center justify-center transition-all duration-200 shrink-0">
-                                            <ShieldCheck class="w-4 h-4 group-hover:text-primary-text transition-colors duration-200" />
-                                        </div>
-                                        <div class="min-w-0">
-                                            <span class="block leading-tight">Acesso Admin</span>
-                                            <span class="block text-[11px] text-text-muted/70 leading-tight">Área restrita</span>
-                                        </div>
-                                    </RouterLink>
-                                </div>
-
-                                <!-- Logout — apenas quando autenticado -->
-                                <div v-if="authStore.isAuthenticated" class="p-1.5 border-t border-border-sutil">
-                                    <button
-                                        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-500/8 transition-all duration-200"
-                                        @click="handleLogout"
-                                    >
-                                        <div class="w-8 h-8 rounded-lg bg-red-500/8 group-hover:bg-red-500/15 flex items-center justify-center transition-all duration-200 shrink-0">
-                                            <LogOut class="w-4 h-4" />
-                                        </div>
-                                        Sair da conta
-                                    </button>
-                                </div>
-                            </div>
-                        </Transition>
-                    </div>
 
 
                     <!-- Mobile Menu Toggle -->
