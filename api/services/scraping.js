@@ -1,28 +1,11 @@
-import axios from "axios";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import * as cheerio from "cheerio";
+import { getProductFromMeliApi } from "./meliApi.js";
 
-const PRODUCT_ID_PATTERN = /MLB\d+/i;
+puppeteer.use(StealthPlugin());
 
-export async function scrapeProduct(url) {
-  const url_original = url;
-  const product_id_match = url_original.match(PRODUCT_ID_PATTERN);
-  if (!product_id_match || !product_id_match[0]) {
-    throw new Error("ID do produto não encontrado na URL.");
-  }
-  const formatted_id = product_id_match[0].toUpperCase();
-  const url_api = `https://www.mercadolivre.com.br/p/api/deferred?id=${formatted_id}&app=pdp&component_ids=open_box_alternatives&allow_test_items=false`;
-  return await fetchAndSave(url_api, url);
-}
-
-const client = axios.create({
-  headers: {
-    "User-Agent":
-      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    Accept: "application/json, text/plain, */*",
-    "Accept-Language": "pt-BR,pt;q=0.9",
-    Referer: "https://www.mercadolivre.com.br/",
-  },
-  timeout: 15000,
-});
+const PRODUCT_ID_PATTERN = /MLB-?\d+/i;
 
 function asArray(value) {
   if (Array.isArray(value)) return value;
@@ -36,150 +19,262 @@ function firstDefined(...values) {
 
 function toNumber(value) {
   if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "string") {
+    const cleaned = value.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
+    const parsed = parseFloat(cleaned);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
   const parsed = Number(value);
   return Number.isNaN(parsed) ? null : parsed;
 }
 
 function normalizeMeliImageUrl(url) {
   if (typeof url !== "string") return null;
+  
+  // Força HTTPS
+  let normalized = url.startsWith("http://") 
+    ? url.replace("http://", "https://") 
+    : url;
 
-  return url
-    .replace(/-I\.(jpg|jpeg|png|webp)$/i, "-O.$1")
-    .replace(/-V\.(jpg|jpeg|png|webp)$/i, "-O.$1");
+  // Substitui qualquer sufixo de tamanho (-I, -G, -V, -R, etc.) para o tamanho original (-O)
+  return normalized.replace(/-[A-Z]\.(jpg|jpeg|png|webp)$/i, "-O.$1");
 }
 
 function uniqueStrings(values) {
   return [...new Set(values.filter((value) => typeof value === "string" && value.trim()))];
 }
 
-function findSchemaItem(schema, type) {
-  return schema.find((item) => item?.["@type"] === type);
+function extractMlbId(url) {
+  if (!url) return null;
+  const match = url.match(PRODUCT_ID_PATTERN);
+  return match ? match[0].replace("-", "").toUpperCase() : null;
 }
 
-function extractImages(productSchema) {
-  const images = asArray(productSchema?.image)
-    .map(normalizeMeliImageUrl)
-    .filter(Boolean);
-
-  return uniqueStrings(images);
-}
-
-function extractReviews(productSchema) {
-  return asArray(productSchema?.review)
-    .map((review, index) => ({
-      id: review?.["@id"] || `${productSchema?.sku || productSchema?.name || "review"}-${index + 1}`,
-      author: review?.author?.name || review?.author || null,
-      text: review?.reviewBody || null,
-      rate: toNumber(review?.reviewRating?.ratingValue),
-      date: review?.datePublished || null,
-    }))
-    .filter((review) => review.text);
-}
-
-function extractCategories(schema) {
-  const breadcrumb = findSchemaItem(schema, "BreadcrumbList");
-
-  return asArray(breadcrumb?.itemListElement)
-    .map((item) => item?.item?.name)
-    .filter(Boolean);
-}
-
-function extractVariants(json) {
-  const variationPayload =
-    json.components?.variations ||
-    json.components?.variation_selector ||
-    json.components?.ui_variations ||
-    json.components?.track?.melidata_event?.event_data?.variations;
-
-  return asArray(variationPayload?.variations || variationPayload)
-    .map((variant) => ({
-      id: variant?.id || variant?.item_id || variant?.value_id || null,
-      name: variant?.name || variant?.label || variant?.value_name || null,
-      selected: Boolean(variant?.selected),
-      available:
-        variant?.available !== undefined
-          ? variant.available
-          : variant?.disabled !== undefined
-            ? !variant.disabled
-            : null,
-      url: variant?.url || variant?.permalink || null,
-      image: normalizeMeliImageUrl(variant?.picture || variant?.image || variant?.thumbnail),
-    }))
-    .filter((variant) => variant.id || variant.name || variant.url || variant.image);
-}
-
-async function fetchAndSave(url, original_url) {
-  const url_af = url;
-  const response = await client.get(url);
-  const products = [];
-
-  const json =
-    typeof response.data === "string"
-      ? JSON.parse(response.data)
-      : response.data;
-
-  if (!json.schema || !Array.isArray(json.schema) || !json.schema[0]) {
-    throw new Error("Dados do produto não encontrados na resposta da API.");
+/**
+ * Realiza o scraping de um produto do Mercado Livre usando Puppeteer Stealth para burlar o Cloudflare/Anubis.
+ * @param {string} url - URL do produto
+ * @returns {Promise<string>} String contendo o JSON do produto em formato de array compatível
+ */
+export async function scrapeProduct(url) {
+  // Se configurado para usar a API oficial do Mercado Livre, redireciona a chamada
+  if (process.env.MERCADO_LIVRE_API_USE_OFFICIAL === "true") {
+    console.log(`[MeliApi] Buscando dados do produto via API oficial: ${url}`);
+    return await getProductFromMeliApi(url);
   }
 
-  const productSchema = findSchemaItem(json.schema, "Product") || json.schema[0];
-  const aggregateRating = productSchema.aggregateRating || {};
-  const offers = Array.isArray(productSchema.offers)
+  console.log(`[Scraping] Iniciando navegador Stealth Puppeteer para: ${url}`);
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-blink-features=AutomationControlled",
+        "--disable-infobars",
+        "--window-size=1280,800"
+      ],
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 800 });
+    
+    await page.setExtraHTTPHeaders({
+      "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+    });
+
+    console.log("[Scraping] Acessando página do produto...");
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+
+    console.log("[Scraping] Aguardando resolução do desafio Cloudflare/Anubis...");
+    // Aguarda o seletor clássico de título ou algum elemento principal da página de produto
+    await page.waitForSelector(".ui-pdp-title", { timeout: 12000 });
+
+    const html = await page.content();
+    console.log("[Scraping] Desafio superado com sucesso! Extraindo dados da DOM...");
+
+    const product = parseHtmlProductData(html, url);
+    await browser.close();
+
+    return JSON.stringify([product], null, 2);
+  } catch (error) {
+    console.error(`[Scraping] Falha ao raspar produto: ${error.message}`);
+    if (browser) {
+      await browser.close();
+    }
+    throw error;
+  }
+}
+
+/**
+ * Faz o parser do HTML completo da página e extrai os campos no formato padrão do banco.
+ * @param {string} html - HTML bruto da página do produto
+ * @param {string} url - URL do produto
+ * @returns {object} Objeto do produto mapeado
+ */
+function parseHtmlProductData(html, url) {
+  const $ = cheerio.load(html);
+  const meliId = extractMlbId(url);
+
+  // 1. Tenta encontrar blocos JSON-LD para extrair dados estruturados (SEO)
+  let productSchema = null;
+  let breadcrumbSchema = null;
+
+  $('script[type="application/ld+json"]').each((i, el) => {
+    try {
+      const json = JSON.parse($(el).html());
+      if (json?.["@type"] === "Product") {
+        productSchema = json;
+      } else if (Array.isArray(json)) {
+        const prod = json.find((item) => item?.["@type"] === "Product");
+        if (prod) productSchema = prod;
+      }
+
+      if (json?.["@type"] === "BreadcrumbList") {
+        breadcrumbSchema = json;
+      }
+    } catch (e) {
+      // Ignora erros de parse do JSON
+    }
+  });
+
+  const aggregateRating = productSchema?.aggregateRating || {};
+  const offers = Array.isArray(productSchema?.offers)
     ? productSchema.offers[0]
-    : productSchema.offers || {};
-  const eventData = json.components?.track?.melidata_event?.event_data || {};
-  const reviews = extractReviews(productSchema);
-  const images = extractImages(productSchema);
-  const rating = toNumber(firstDefined(aggregateRating.ratingValue, aggregateRating.rating));
-  const ratingCount = toNumber(
-    firstDefined(aggregateRating.ratingCount, aggregateRating.reviewCount)
-  );
+    : productSchema?.offers || {};
 
-  const product_id = json.id;
-  const product_title = productSchema.name;
-  const product_image = images[0] || normalizeMeliImageUrl(productSchema.image);
-  const product_url = original_url;
-  const product_rate = rating;
-  const product_rateCount = ratingCount;
-  const product_price = toNumber(firstDefined(offers.price, eventData.price));
-  const product_originalprice = toNumber(eventData.original_price);
-  const product_description = productSchema.description;
-  const product_review1 = reviews[0]?.text;
-  const product_review2 = reviews[1]?.text;
-  const product_review3 = reviews[2]?.text;
-  const product_brand = productSchema.brand?.name || productSchema.brand || null;
-  const product_categories = extractCategories(json.schema);
-  const product_variants = extractVariants(json);
+  // 2. Extrai Título (Título clássico da PDP do Mercado Livre)
+  const product_title = $(".ui-pdp-title").text().trim() || productSchema?.name || "";
 
-  const product = {
-    id: product_id,
+  // 3 e 4. Extrai Preço Atual e Preço Original
+  let product_price = null;
+  let product_originalprice = null;
+
+  $(".andes-money-amount").each((i, el) => {
+    const $el = $(el);
+    
+    // Ignora elementos dentro de recomendações, carrosséis, outras variações ou ofertas não selecionadas
+    const isExcluded = $el.closest([
+      ".ui-recommendations-carousel-free",
+      ".recos-polycard",
+      ".poly-card",
+      ".andes-carousel-free",
+      ".ui-pdp-outside_variations__thumbnails__item",
+      ".ui-pdp-outside_variations",
+      ".ui-pdp-other-sellers",
+      ".ui-pdp-buy-box-offers__offer-list-item--NOT-SELECTED"
+    ].join(",")).length > 0;
+    
+    if (isExcluded) return;
+
+    const fraction = $el.find(".andes-money-amount__fraction").text().replace(/\./g, "").trim();
+    const cents = $el.find(".andes-money-amount__cents").text().trim() || "00";
+    const parsedVal = fraction ? parseFloat(`${fraction}.${cents}`) : null;
+
+    if (parsedVal) {
+      if ($el.hasClass("ui-pdp-price__original-value") || $el.parent().hasClass("ui-pdp-price__part--original")) {
+        product_originalprice = parsedVal;
+      } else if ($el.hasClass("andes-money-amount--weight-semibold")) {
+        product_price = parsedVal;
+      } else if (!product_price && !$el.hasClass("ui-pdp-color--BLACK")) {
+        product_price = parsedVal;
+      }
+    }
+  });
+
+  // Fallbacks usando o schema JSON-LD se a extração da DOM falhar
+  if (!product_price) {
+    product_price = toNumber(firstDefined(offers?.price, 0));
+  }
+  if (!product_originalprice) {
+    product_originalprice = productSchema?.offers?.priceSpecification?.price ? toNumber(productSchema.offers.priceSpecification.price) : null;
+  }
+
+  // 5. Extrai Imagens de alta qualidade
+  const domImages = [];
+  
+  // Varre apenas as imagens de dentro do contêiner da galeria oficial do produto
+  $(".ui-pdp-gallery img").each((i, el) => {
+    const className = $(el).attr("class") || "";
+    const src = $(el).attr("data-zoom") || $(el).attr("src") || $(el).attr("data-src");
+    
+    if (src && !className.includes("clip") && !src.includes("base64,")) {
+      domImages.push(normalizeMeliImageUrl(src));
+    }
+  });
+
+  if (productSchema?.image) {
+    asArray(productSchema.image).forEach((img) => domImages.push(normalizeMeliImageUrl(img)));
+  }
+
+  const images = uniqueStrings(domImages);
+  const product_image = images[0] || null;
+
+  // 6. Extrai Avaliações (Rating)
+  const ratingValue = $(".ui-pdp-review__rating").first().text().trim();
+  const ratingCountText = $(".ui-pdp-review__amount").first().text().replace(/[^\d]/g, "").trim();
+  
+  const rating = toNumber(ratingValue) || toNumber(aggregateRating?.ratingValue) || null;
+  const ratingCount = toNumber(ratingCountText) || toNumber(aggregateRating?.ratingCount) || null;
+
+  // 7. Extrai Descrição do produto
+  const product_description = $(".ui-pdp-description__content").text().trim() || productSchema?.description || "";
+
+  // 8. Extrai Categorias
+  const categoriesList = [];
+  $(".andes-breadcrumb__item a").each((i, el) => {
+    categoriesList.push($(el).text().trim());
+  });
+  if (breadcrumbSchema?.itemListElement) {
+    asArray(breadcrumbSchema.itemListElement).forEach((item) => {
+      if (item?.item?.name) categoriesList.push(item.item.name);
+    });
+  }
+  const product_categories = uniqueStrings(categoriesList);
+
+  // 9. Marca (Brand)
+  const product_brand = $(".ui-pdp-brand-link").text().trim() || productSchema?.brand?.name || productSchema?.brand || null;
+
+  // 10. Variações (Se existirem no seletor da página)
+  const variants = [];
+  $(".ui-pdp-variations__picker, .ui-pdp-variation").each((i, el) => {
+    const variantId = $(el).attr("data-id") || `variant-${i}`;
+    const variantName = $(el).find(".ui-pdp-variations__picker-title, .ui-pdp-variation-title").text().trim() || $(el).text().trim();
+    variants.push({
+      id: variantId,
+      name: variantName,
+      selected: false,
+      available: true,
+      url: url,
+      image: product_image,
+    });
+  });
+
+  return {
+    id: meliId,
     title: product_title,
     image: product_image,
     image_high_quality: product_image,
     images,
-    url: product_url,
-    url_afiliado: url_af,
-    rate: product_rate,
-    rateCount: product_rateCount,
-    rating: product_rate,
-    rating_count: product_rateCount,
-    review_count: product_rateCount,
+    url: url,
+    url_afiliado: url,
+    rate: rating,
+    rateCount: ratingCount,
+    rating: rating,
+    rating_count: ratingCount,
+    review_count: ratingCount,
     original_price: product_originalprice,
     price: product_price,
-    price_currency: offers.priceCurrency || eventData.currency_id || null,
-    availability: offers.availability || null,
-    condition: productSchema.itemCondition || eventData.condition || null,
+    price_currency: "BRL",
+    availability: "in_stock",
+    condition: "new",
     description: product_description,
-    review1: product_review1,
-    review2: product_review2,
-    review3: product_review3,
-    reviews,
+    review1: null,
+    review2: null,
+    review3: null,
+    reviews: [],
     brand: product_brand,
     categories: product_categories,
-    variants: product_variants,
+    variants: variants,
   };
-  products.push(product);
-  const formatted = JSON.stringify(products, null, 2);
-
-  return formatted;
 }
