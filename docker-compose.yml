@@ -31,7 +31,7 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-noreply@example.com}
     volumes:
-      - afiliado_meli_profile:/app/.puppeteer
+      - afiliado_puppeteer:/app/.puppeteer
     networks:
       - network_swarm_public
     deploy:
@@ -58,7 +58,7 @@ services:
         - traefik.http.services.afiliado-novnc.loadbalancer.server.port=6080
 
 volumes:
-  afiliado_meli_profile:
+  afiliado_puppeteer:
 
 networks:
   network_swarm_public:
