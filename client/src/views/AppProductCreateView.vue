@@ -10,6 +10,8 @@ const isMobileMenuOpen = ref(false)
 const activeItem = ref('products')
 const isScraping = ref(false)
 const isSaving = ref(false)
+const isStartingMeliAuth = ref(false)
+const needsMeliAuth = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const scrapeDebounce = ref(null)
@@ -25,6 +27,7 @@ const isLoadingParents = ref(false)
 const form = ref({
   url: '',
   title: '',
+  description: '',
   price: '',
   original_price: '',
   image_url: '',
@@ -143,6 +146,7 @@ function resetForm() {
   form.value = {
     url: '',
     title: '',
+    description: '',
     price: '',
     original_price: '',
     image_url: '',
@@ -153,6 +157,7 @@ function resetForm() {
   }
   preview.value = null
   lastScrapedUrl.value = ''
+  needsMeliAuth.value = false
   errorMessage.value = ''
 }
 
@@ -170,7 +175,7 @@ function normalizeNumber(value) {
 function canTriggerScraping(url) {
   try {
     const parsed = new URL(url)
-    return /mercadolivre\.com(\.br)?$/i.test(parsed.hostname)
+    return /mercadolivre\.com(\.br)?$/i.test(parsed.hostname) || parsed.hostname === 'meli.la'
   } catch {
     return false
   }
@@ -178,9 +183,10 @@ function canTriggerScraping(url) {
 
 async function runScraping() {
   const targetUrl = form.value.url.trim()
-  if (!targetUrl || targetUrl === lastScrapedUrl.value) return
+  if (!targetUrl || (targetUrl === lastScrapedUrl.value && preview.value)) return
 
   isScraping.value = true
+  needsMeliAuth.value = false
   try {
     const { data } = await http.get('/produtos/scraping', {
       params: { url: targetUrl },
@@ -195,17 +201,39 @@ async function runScraping() {
     preview.value = scraped
     lastScrapedUrl.value = targetUrl
     form.value.title = scraped.title || ''
+    form.value.description = scraped.description || ''
     form.value.price = scraped.price ?? ''
     form.value.original_price = scraped.original_price ?? ''
     form.value.image_url = scraped.image || ''
-    form.value.affiliate_url = form.value.affiliate_url || form.value.url
     form.value.status = 'active'
     form.value.featured = false
   } catch (error) {
+    if (error?.response?.data?.needsAuth) {
+      needsMeliAuth.value = true
+      errorMessage.value = error.response.data.message || 'Faça login no Mercado Livre e tente novamente.'
+      return
+    }
+
     errorMessage.value =
       error?.response?.data?.message || error?.response?.data?.error || 'Erro ao fazer scraping.'
   } finally {
     isScraping.value = false
+  }
+}
+
+async function startMeliAuth() {
+  isStartingMeliAuth.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  try {
+    const { data } = await http.post('/scraping/auth/start')
+    successMessage.value = data?.message || 'Janela de login aberta. Faça login e tente o scraping novamente.'
+  } catch (error) {
+    errorMessage.value =
+      error?.response?.data?.message || error?.response?.data?.error || 'Erro ao abrir autenticação do Mercado Livre.'
+  } finally {
+    isStartingMeliAuth.value = false
   }
 }
 
@@ -223,6 +251,7 @@ async function submitForm() {
     const payload = {
       url: form.value.url.trim(),
       title: form.value.title.trim(),
+      description: form.value.description.trim() || null,
       price: normalizeNumber(form.value.price),
       original_price: normalizeNumber(form.value.original_price),
       image_url: form.value.image_url.trim() || null,
@@ -238,6 +267,12 @@ async function submitForm() {
     resetForm()
     form.value.url = preservedUrl
   } catch (error) {
+    if (error?.response?.data?.needsAuth) {
+      needsMeliAuth.value = true
+      errorMessage.value = error.response.data.message || 'Faça login no Mercado Livre e tente novamente.'
+      return
+    }
+
     errorMessage.value =
       error?.response?.data?.message || error?.response?.data?.error || 'Erro ao cadastrar produto.'
   } finally {
@@ -250,6 +285,7 @@ watch(
   (newUrl) => {
     errorMessage.value = ''
     successMessage.value = ''
+    needsMeliAuth.value = false
 
     if (scrapeDebounce.value) {
       clearTimeout(scrapeDebounce.value)
@@ -266,6 +302,7 @@ watch(
     if (trimmedUrl !== lastScrapedUrl.value) {
       preview.value = null
       form.value.title = ''
+      form.value.description = ''
       form.value.price = ''
       form.value.original_price = ''
       form.value.image_url = ''
@@ -335,6 +372,16 @@ onBeforeUnmount(() => {
             />
           </div>
         </label>
+        <div class="mt-3 flex justify-end">
+          <BaseButton
+            variant="outline"
+            size="sm"
+            :disabled="!canTriggerScraping(form.url.trim()) || isScraping || isSaving"
+            @click="runScraping"
+          >
+            {{ isScraping ? 'Buscando...' : 'Buscar agora' }}
+          </BaseButton>
+        </div>
       </div>
 
       <div v-if="preview" class="grid grid-cols-1 lg:grid-cols-[88px_1fr] gap-4 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800 p-4 mb-5 items-center">
@@ -377,6 +424,16 @@ onBeforeUnmount(() => {
               placeholder="Nome do produto"
               class="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2.5 text-sm text-gray-900 dark:text-neutral-100 placeholder:text-gray-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors hover:border-gray-300 dark:hover:border-neutral-600"
             />
+          </label>
+
+          <label class="flex flex-col gap-1.5 md:col-span-2 min-w-0">
+            <span class="text-sm font-medium text-gray-700 dark:text-neutral-300">Descrição</span>
+            <textarea
+              v-model="form.description"
+              rows="8"
+              placeholder="Descrição extraída do Mercado Livre"
+              class="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2.5 text-sm text-gray-900 dark:text-neutral-100 placeholder:text-gray-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors hover:border-gray-300 dark:hover:border-neutral-600 resize-y"
+            ></textarea>
           </label>
 
           <label class="flex flex-col gap-1.5 min-w-0">
@@ -516,7 +573,18 @@ onBeforeUnmount(() => {
         v-if="errorMessage"
         class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 mb-5"
       >
-        {{ errorMessage }}
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p>{{ errorMessage }}</p>
+          <BaseButton
+            v-if="needsMeliAuth"
+            variant="outline"
+            size="sm"
+            :disabled="isStartingMeliAuth"
+            @click="startMeliAuth"
+          >
+            {{ isStartingMeliAuth ? 'Abrindo...' : 'Autenticar Mercado Livre' }}
+          </BaseButton>
+        </div>
       </div>
 
       <div
@@ -584,6 +652,3 @@ onBeforeUnmount(() => {
   color: #737373;
 }
 </style>
-
-
-

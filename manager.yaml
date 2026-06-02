@@ -2,11 +2,16 @@ version: "3.7"
 
 services:
   afiliado:
-    image: afiliado-ml/cliente:${CLIENT_TAG}
-    afiliado-ml/cliente:dalberson
+    image: afiliado-ml/cliente:${CLIENT_TAG:-dalberson}
     environment:
       NODE_ENV: production
       PORT: "3008"
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+      MERCADO_LIVRE_PUPPETEER_PROFILE_DIR: /app/.puppeteer/meli-profile
+      DISPLAY: :99
+      VNC_PORT: "5900"
+      NOVNC_PORT: "6080"
       DATABASE_URL: postgres://${POSTGRES_USER:-afiliado}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-postgres}:5432/${POSTGRES_DB:-afiliado_ml}
       REDIS_URL: redis://:${REDIS_PASSWORD:-}@${REDIS_HOST:-redis}:6379
       CLIENT_URL: https://${APP_DOMAIN}
@@ -25,6 +30,8 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-noreply@example.com}
+    volumes:
+      - afiliado_meli_profile:/app/.puppeteer
     networks:
       - network_swarm_public
     deploy:
@@ -40,6 +47,14 @@ services:
         - traefik.http.routers.afiliado.tls.certresolver=letsencryptresolver
         - traefik.http.routers.afiliado.service=afiliado
         - traefik.http.services.afiliado.loadbalancer.server.port=3008
+        - traefik.http.routers.afiliado-novnc.rule=Host(`${NOVNC_DOMAIN:-novnc.${APP_DOMAIN}}`)
+        - traefik.http.routers.afiliado-novnc.entrypoints=websecure
+        - traefik.http.routers.afiliado-novnc.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.afiliado-novnc.service=afiliado-novnc
+        - traefik.http.services.afiliado-novnc.loadbalancer.server.port=6080
+
+volumes:
+  afiliado_meli_profile:
 
 networks:
   network_swarm_public:

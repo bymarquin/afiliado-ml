@@ -54,6 +54,15 @@ export async function scrapeProductController(req, res) {
     });
   } catch (error) {
     console.error("Erro no controller de scraping:", error.message);
+    if (error.needsAuth || error.code === "MELI_AUTH_REQUIRED") {
+      return res.status(401).json({
+        success: false,
+        needsAuth: true,
+        error: "Sessão do Mercado Livre expirada",
+        message: "Faça login no Mercado Livre e tente novamente.",
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: "Erro ao acessar o link",

@@ -11,6 +11,9 @@ client/node_modules
 # Build local do cliente (gerado dentro do Docker)
 client/dist
 
+# Perfil local do Puppeteer contém cookies/sessão
+api/.puppeteer
+
 # Arquivos de ambiente (não devem entrar na imagem)
 .env
 .env.*

@@ -1,11 +1,23 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import * as cheerio from "cheerio";
-import { getProductFromMeliApi } from "./meliApi.js";
+import { MELI_PROFILE_DIR } from "./meliAuthSession.js";
 
 puppeteer.use(StealthPlugin());
 
 const PRODUCT_ID_PATTERN = /MLB-?\d+/i;
+const PAGE_TIMEOUT_MS = 30000;
+const PRODUCT_SELECTOR_TIMEOUT_MS = 12000;
+const VIEWPORT = { width: 1280, height: 800 };
+const CHROMIUM_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || null;
+const LAUNCH_ARGS = [
+  "--no-sandbox",
+  "--disable-setuid-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-blink-features=AutomationControlled",
+  "--disable-infobars",
+  `--window-size=${VIEWPORT.width},${VIEWPORT.height}`,
+];
 
 function asArray(value) {
   if (Array.isArray(value)) return value;
@@ -25,6 +37,12 @@ function toNumber(value) {
     return Number.isNaN(parsed) ? null : parsed;
   }
   const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function toRatingNumber(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = parseFloat(String(value).replace(",", ".").replace(/[^\d.]/g, ""));
   return Number.isNaN(parsed) ? null : parsed;
 }
 
@@ -50,59 +68,74 @@ function extractMlbId(url) {
   return match ? match[0].replace("-", "").toUpperCase() : null;
 }
 
-/**
- * Realiza o scraping de um produto do Mercado Livre usando Puppeteer Stealth para burlar o Cloudflare/Anubis.
- * @param {string} url - URL do produto
- * @returns {Promise<string>} String contendo o JSON do produto em formato de array compatível
- */
-export async function scrapeProduct(url) {
-  // Se configurado para usar a API oficial do Mercado Livre, redireciona a chamada
-  if (process.env.MERCADO_LIVRE_API_USE_OFFICIAL === "true") {
-    console.log(`[MeliApi] Buscando dados do produto via API oficial: ${url}`);
-    return await getProductFromMeliApi(url);
+async function createBrowser() {
+  return puppeteer.launch({
+    headless: true,
+    executablePath: CHROMIUM_EXECUTABLE_PATH || undefined,
+    userDataDir: MELI_PROFILE_DIR,
+    args: LAUNCH_ARGS,
+  });
+}
+
+async function isAuthRequiredPage(page) {
+  const currentUrl = page.url();
+  if (/\/gz\/account-verification|\/jms\/mlb\/lgz\/login/.test(currentUrl)) {
+    return true;
   }
 
-  console.log(`[Scraping] Iniciando navegador Stealth Puppeteer para: ${url}`);
-  let browser;
-  try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-blink-features=AutomationControlled",
-        "--disable-infobars",
-        "--window-size=1280,800"
-      ],
-    });
+  const bodyText = await page.evaluate(() => document.body?.innerText || "");
+  return /Para continuar, acesse\s+sua conta|Já tenho conta|Sou novo/i.test(bodyText);
+}
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800 });
-    
+function createAuthRequiredError() {
+  const error = new Error("Sessão do Mercado Livre expirada ou ausente.");
+  error.code = "MELI_AUTH_REQUIRED";
+  error.needsAuth = true;
+  return error;
+}
+
+async function getProductHtml(browser, url) {
+  const page = await browser.newPage();
+  try {
+    await page.setViewport(VIEWPORT);
     await page.setExtraHTTPHeaders({
       "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
     });
 
-    console.log("[Scraping] Acessando página do produto...");
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: PAGE_TIMEOUT_MS });
+    if (await isAuthRequiredPage(page)) {
+      throw createAuthRequiredError();
+    }
 
-    console.log("[Scraping] Aguardando resolução do desafio Cloudflare/Anubis...");
-    // Aguarda o seletor clássico de título ou algum elemento principal da página de produto
-    await page.waitForSelector(".ui-pdp-title", { timeout: 12000 });
+    await page.waitForSelector(".ui-pdp-title", { timeout: PRODUCT_SELECTOR_TIMEOUT_MS });
 
-    const html = await page.content();
-    console.log("[Scraping] Desafio superado com sucesso! Extraindo dados da DOM...");
+    return await page.content();
+  } finally {
+    await page.close();
+  }
+}
 
+/**
+ * Realiza o scraping de um produto do Mercado Livre.
+ * @param {string} url - URL do produto
+ * @returns {Promise<string>} String contendo o JSON do produto em formato de array compatível
+ */
+export async function scrapeProduct(url) {
+  console.log(`[Scraping] Buscando dados do produto via Puppeteer: ${url}`);
+  let browser;
+  try {
+    browser = await createBrowser();
+    const html = await getProductHtml(browser, url);
     const product = parseHtmlProductData(html, url);
-    await browser.close();
 
     return JSON.stringify([product], null, 2);
   } catch (error) {
     console.error(`[Scraping] Falha ao raspar produto: ${error.message}`);
+    throw error;
+  } finally {
     if (browser) {
       await browser.close();
     }
-    throw error;
   }
 }
 
@@ -214,7 +247,7 @@ function parseHtmlProductData(html, url) {
   const ratingValue = $(".ui-pdp-review__rating").first().text().trim();
   const ratingCountText = $(".ui-pdp-review__amount").first().text().replace(/[^\d]/g, "").trim();
   
-  const rating = toNumber(ratingValue) || toNumber(aggregateRating?.ratingValue) || null;
+  const rating = toRatingNumber(ratingValue) || toRatingNumber(aggregateRating?.ratingValue) || null;
   const ratingCount = toNumber(ratingCountText) || toNumber(aggregateRating?.ratingCount) || null;
 
   // 7. Extrai Descrição do produto

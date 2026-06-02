@@ -177,6 +177,15 @@ export async function scrapeAndCreateProduto(req, res) {
     });
   } catch (error) {
     console.error('Erro ao fazer scraping e criar produto:', error.message);
+    if (error.needsAuth || error.code === 'MELI_AUTH_REQUIRED') {
+      return res.status(401).json({
+        success: false,
+        needsAuth: true,
+        error: 'Sessão do Mercado Livre expirada',
+        message: 'Faça login no Mercado Livre e tente novamente.',
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: 'Erro ao processar produto',
@@ -224,6 +233,15 @@ export async function scrapeProduto(req, res) {
     });
   } catch (error) {
     console.error('Erro no scraping:', error.message);
+    if (error.needsAuth || error.code === 'MELI_AUTH_REQUIRED') {
+      return res.status(401).json({
+        success: false,
+        needsAuth: true,
+        error: 'Sessão do Mercado Livre expirada',
+        message: 'Faça login no Mercado Livre e tente novamente.',
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: 'Erro ao fazer scraping',
@@ -250,6 +268,6 @@ function isMercadoLivreUrl(url) {
 }
 
 function extractMlbId(url) {
-  const match = url.match(/MLB[\w\d]+/);
-  return match ? match[0] : null;
+  const match = url.match(/MLB-?\d+/i);
+  return match ? match[0].replace('-', '').toUpperCase() : null;
 }

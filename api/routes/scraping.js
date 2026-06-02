@@ -1,5 +1,10 @@
 import express from "express";
 import { scrapeProductController } from "../controllers/scrapingController.js";
+import {
+  getMeliAuthStatusController,
+  startMeliAuthController,
+} from "../controllers/meliAuthController.js";
+import { requireAuth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -14,5 +19,7 @@ const router = express.Router();
  *   ?url={link do mercado livre}
  */
 router.get("/", scrapeProductController);
+router.get("/auth/status", requireAuth, getMeliAuthStatusController);
+router.post("/auth/start", requireAuth, startMeliAuthController);
 
 export default router;
