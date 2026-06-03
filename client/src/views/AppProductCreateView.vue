@@ -17,6 +17,7 @@ const successMessage = ref('')
 const scrapeDebounce = ref(null)
 const lastScrapedUrl = ref('')
 const categories = ref([])
+const novncUrl = import.meta.env.VITE_NOVNC_URL || '/novnc/vnc.html'
 
 // Custom Select State
 const isSelectOpen = ref(false)
@@ -225,11 +226,17 @@ async function startMeliAuth() {
   isStartingMeliAuth.value = true
   errorMessage.value = ''
   successMessage.value = ''
+  const authWindow = window.open('', '_blank')
 
   try {
     const { data } = await http.post('/scraping/auth/start')
+    if (authWindow) {
+      authWindow.location.href = novncUrl
+      authWindow.focus()
+    }
     successMessage.value = data?.message || 'Janela de login aberta. Faça login e tente o scraping novamente.'
   } catch (error) {
+    authWindow?.close()
     errorMessage.value =
       error?.response?.data?.message || error?.response?.data?.error || 'Erro ao abrir autenticação do Mercado Livre.'
   } finally {
