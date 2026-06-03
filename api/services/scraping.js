@@ -1,6 +1,9 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import * as cheerio from "cheerio";
+import { cpSync, existsSync, mkdtempSync, rmSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 import { MELI_PROFILE_DIR } from "./meliAuthSession.js";
 
 puppeteer.use(StealthPlugin());
@@ -68,11 +71,25 @@ function extractMlbId(url) {
   return match ? match[0].replace("-", "").toUpperCase() : null;
 }
 
-async function createBrowser() {
+function createScrapingProfileDir() {
+  const userDataDir = mkdtempSync(join(tmpdir(), "meli-scraping-profile-"));
+  if (existsSync(MELI_PROFILE_DIR)) {
+    cpSync(MELI_PROFILE_DIR, userDataDir, {
+      recursive: true,
+      force: true,
+      errorOnExist: false,
+      filter: (source) => !/Singleton/.test(source),
+    });
+  }
+
+  return userDataDir;
+}
+
+async function createBrowser(userDataDir) {
   return puppeteer.launch({
     headless: true,
     executablePath: CHROMIUM_EXECUTABLE_PATH || undefined,
-    userDataDir: MELI_PROFILE_DIR,
+    userDataDir,
     args: LAUNCH_ARGS,
   });
 }
@@ -123,8 +140,9 @@ async function getProductHtml(browser, url) {
 export async function scrapeProduct(url) {
   console.log(`[Scraping] Buscando dados do produto via Puppeteer: ${url}`);
   let browser;
+  const userDataDir = createScrapingProfileDir();
   try {
-    browser = await createBrowser();
+    browser = await createBrowser(userDataDir);
     const html = await getProductHtml(browser, url);
     const product = parseHtmlProductData(html, url);
 
@@ -136,6 +154,7 @@ export async function scrapeProduct(url) {
     if (browser) {
       await browser.close();
     }
+    rmSync(userDataDir, { recursive: true, force: true });
   }
 }
 
