@@ -12,6 +12,7 @@ const isScraping = ref(false)
 const isSaving = ref(false)
 const isStartingMeliAuth = ref(false)
 const needsMeliAuth = ref(false)
+const isMeliAuthenticated = ref(true)
 const errorMessage = ref('')
 const successMessage = ref('')
 const scrapeDebounce = ref(null)
@@ -109,6 +110,7 @@ function handleClickOutside(event) {
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
   loadCategories()
+  loadMeliAuthStatus()
 })
 
 onUnmounted(() => {
@@ -142,6 +144,17 @@ async function loadCategories() {
 const canSave = computed(() => {
   return Boolean(form.value.url.trim() && form.value.title.trim() && form.value.price !== '')
 })
+
+const showMeliAuthAction = computed(() => needsMeliAuth.value || !isMeliAuthenticated.value)
+
+async function loadMeliAuthStatus() {
+  try {
+    const { data } = await http.get('/scraping/auth/status')
+    isMeliAuthenticated.value = Boolean(data?.data?.profileExists)
+  } catch {
+    isMeliAuthenticated.value = true
+  }
+}
 
 function resetForm() {
   form.value = {
@@ -583,7 +596,24 @@ onBeforeUnmount(() => {
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <p>{{ errorMessage }}</p>
           <BaseButton
-            v-if="needsMeliAuth"
+            v-if="showMeliAuthAction"
+            variant="outline"
+            size="sm"
+            :disabled="isStartingMeliAuth"
+            @click="startMeliAuth"
+          >
+            {{ isStartingMeliAuth ? 'Abrindo...' : 'Autenticar Mercado Livre' }}
+          </BaseButton>
+        </div>
+      </div>
+
+      <div
+        v-if="showMeliAuthAction && !errorMessage"
+        class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 mb-5"
+      >
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p>Mercado Livre ainda não autenticado. Faça login antes de extrair produtos.</p>
+          <BaseButton
             variant="outline"
             size="sm"
             :disabled="isStartingMeliAuth"
